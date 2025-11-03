@@ -2260,6 +2260,24 @@ themeIcon.addEventListener('click', () => showPage(themeSettingsPage));
         contactAvatarPicker.addEventListener('click', function() {
             contactAvatarInput.click();
         });
+        
+        contactAvatarInput.addEventListener('change', async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            // 调用我们之前添加的压缩工具
+            const compressedBase64 = await compressImage(e.target.result, 100, 100);
+            // 更新联系人头像的预览
+            contactAvatarPreview.src = compressedBase64;
+        } catch (error) {
+            console.error("Contact avatar compression failed:", error);
+            alert("联系人头像处理失败，请换张图片试试。");
+        }
+    };
+    reader.readAsDataURL(file);
+});
 
         avatarInput.addEventListener('change', function(event) {
     const file = event.target.files[0];
