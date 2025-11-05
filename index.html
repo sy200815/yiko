@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>yuzi chat</title>
+
+<!-- 新增：从Google Fonts引入在线字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  
     <!-- CSS样式将写在这里 -->
     <style>
         /* 让整个页面没有多余的边距，并设置一个背景色，方便我们看清手机屏幕的边界 */
@@ -94,26 +100,36 @@
 
 #avatar-container {
     position: relative;
-    width: 120px; /* 改为小巧的尺寸 */
-    height: 120px; /* 改为小巧的尺寸 */
+    width: 90%; /* 宽度占屏幕的90%，看起来更协调 */
+    height: 25%; /* 高度占屏幕的25%，也就是四分之一 */
     display: flex;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+    margin-bottom: 20px; /* 和下面的图标留出一些距离 */
 }
 
-
+/* --- 新增：头像后面的装饰背景 --- */
+#avatar-container::before {
+    content: ''; /* 这是让这个“幽灵”元素显示出来的咒语 */
+    position: absolute;
+    width: 100%; /* 宽度和头像容器一样宽 */
+    height: 100%; /* 高度和头像容器一样高 */
+    background-color: rgba(255, 255, 255, 0.4); /* 半透明白色，和图标风格统一 */
+    backdrop-filter: blur(10px); /* 毛玻璃效果，让它更梦幻 */
+    border-radius: 20px; /* 您要的圆角 */
+    z-index: 1; /* 把它放在头像的后面 (头像是2，它就是1) */
+}
 
 #avatar-img {
-    width: 70px;  /* 头像尺寸调整 */
-    height: 70px; /* 头像尺寸调整 */
+    width: 70px;
+    height: 70px;
     background-color: #a0a0a0;
     border-radius: 50%;
     position: relative;
     z-index: 2;
     cursor: pointer;
     object-fit: cover;
-    border: 3px solid white; /* 给头像加一个白色描边，更有层次感 */
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     transition: transform 0.2s ease;
 }
@@ -123,12 +139,12 @@
 
 #app-drawer {
     width: 100%;
-    padding: 0 10px; /* 调整内边距 */
+    padding: 0 10px;
     box-sizing: border-box;
     display: flex;
-    justify-content: center; /* 让图标居中排列 */
+    justify-content: center;
     align-items: flex-start;
-    gap: 25px; /* 图标之间的间距 */
+    gap: 20px; /* 把图标间的距离从 25px 调小到 20px，更协调 */
     flex-wrap: wrap;
 }
 
@@ -137,20 +153,22 @@
     flex-direction: column;
     align-items: center;
     width: 60px;
-    gap: 8px; /* 图标和文字的间距 */
+    gap: 6px; /* 图标和文字的间距也调小一点 */
     cursor: pointer;
     text-align: center;
 }
 
 .app-icon svg {
-    width: 55px; /* 图标尺寸微调 */
-    height: 55px; /* 图标尺寸微调 */
-    background-color: #ffffff; /* 统一用白色底 */
-    border-radius: 16px; /* 更圆润的圆角 */
-    padding: 8px; /* 内部空间 */
-    box-shadow: 0 3px 8px rgba(0,0,0,0.07); /* 调整阴影 */
-    fill: #888; /* 默认图标颜色 */
-    transition: all 0.2s ease-in-out; /* 添加动效 */
+    width: 20px; /* 关键改动1：把尺寸从 55px 缩小到 50px */
+    height: 20px; /* 关键改动1：把尺寸从 55px 缩小到 50px */
+    background-color: rgba(255, 255, 255, 0.5); /* 关键改动2：把背景从纯白变成带50%透明度的白色 */
+    backdrop-filter: blur(8px); /* 关键改动3：这就是“毛玻璃”效果的魔法！让背景变模糊 */
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.07);
+    fill: #555; /* 把图标本身的颜色调深一点，在半透明背景上更清晰 */
+    transition: all 0.2s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* 锦上添花：加一个淡淡的白色边框，质感更好 */
 }
 .app-icon:hover svg {
     transform: translateY(-4px); /* 鼠标悬停时向上浮动 */
@@ -265,20 +283,20 @@
 }
 
         .settings-btn {
-            padding: 12px;
-            background-color: #eeeeee; /* 您指定的浅灰色 */
-            color: #333; /* 深色字体 */
-            border: none; /* 不要边框 */
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s; /* 点击时有颜色渐变效果 */
-        }
+    padding: 12px;
+    background-color: var(--theme-accent-color); /* 关键改动：颜色听从主题“外号”的指挥！ */
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, filter 0.2s; /* 增加了滤镜的过渡效果 */
+}
         
-        /* 鼠标悬停时按钮颜色变深一点，提供反馈 */
+        /* 鼠标悬停时按钮颜色变亮一点，提供反馈 */
         .settings-btn:hover {
-            background-color: #e0e0e0;
+            filter: brightness(1.1); /* 关键改动：无论底下是什么颜色，都让它变亮10% */
         }
 
         .divider {
@@ -513,38 +531,49 @@
 
 #action-popup {
     width: 100%;
-    background-color: #f0f0f0;
-    border-radius: 16px 16px 0 0;
-    padding: 20px;
+    background-color: #ffffff; /* 关键改动1：背景变成纯白色 */
+    border-radius: 20px 20px 0 0; /* 关键改动2：顶部圆角变得更圆润 */
+    padding: 15px 15px 30px; /* 关键改动3：调整内边距，底部留多一点空间更好看 */
     box-sizing: border-box;
     display: flex;
-    gap: 20px;
-    transform: translateY(100%); /* 默认藏在屏幕下方 */
-    transition: transform 0.3s ease-out; /* 滑动动画 */
+    flex-direction: column; /* 关键改动4：让里面的元素垂直排列 */
+    gap: 15px; /* 调整元素之间的间距 */
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1); /* 锦上添花：加一个向上的阴影，更有立体感 */
 }
 
 .action-btn {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
+    align-items: center; /* 关键改动1：让图标和文字水平对齐 */
+    gap: 15px; /* 关键改动2：调整图标和文字的间距 */
     cursor: pointer;
+    background-color: #f5f5f5; /* 关键改动3：给按钮一个浅灰色背景 */
+    padding: 12px 15px; /* 关键改动4：增加内边距，让按钮变大变饱满 */
+    border-radius: 12px; /* 关键改动5：这就是您要的圆角！ */
+    transition: background-color 0.2s; /* 添加点击效果 */
+}
+/* 顺便加一个悬停效果 */
+.action-btn:hover {
+    background-color: #e9e9e9;
 }
 
 .action-btn svg {
-    width: 50px;
-    height: 50px;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 12px;
-    fill: #555;
+    width: 28px; /* 图标尺寸变小，更精致 */
+    height: 28px;
+    padding: 0; /* 移除多余的设置 */
+    background-color: transparent; /* 背景变透明 */
+    border-radius: 0;
+    fill: #333; /* 图标颜色变深 */
+    flex-shrink: 0; /* 防止图标被压缩 */
 }
 
 .action-btn span {
-    font-size: 12px;
-    color: #555;
+    font-size: 15px; /* 字体变大，更清晰 */
+    color: #333; /* 字体颜色变深 */
+    font-weight: 500; /* 字体稍微加粗一点点 */
 }
-
+      
 /* --- 新增：图片消息条样式 --- */
 .message-bubble.image {
     width: 200px;
@@ -564,6 +593,99 @@
     color: #333;
     line-height: 1.5;
     text-align: left;
+}
+
+      /* --- 新增：转账及系统消息样式 (微光玻璃重制版) --- */
+.message-bubble.transfer, .message-bubble.system {
+    background-color: transparent !important;
+    padding: 0 !important;
+}
+
+/* 整个卡片的容器，负责创建光晕背景 */
+.transfer-card-wrapper {
+    position: relative;
+    width: 200px; /* 卡片尺寸 */
+    height: 90px;
+    border-radius: 16px;
+    overflow: hidden; /* 隐藏超出边界的光晕 */
+    background-color: #f0f2f5; /* 一个基础底色 */
+}
+/* 这就是流动的“微光”本体 */
+.transfer-card-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        transparent,
+        rgba(255, 120, 180, 0.5), /* 粉色光 */
+        rgba(120, 180, 255, 0.5), /* 蓝色光 */
+        transparent 30%
+    );
+    animation: rotate 4s linear infinite; /* 让光晕动起来 */
+}
+/* 这是覆盖在光晕上层的“磨砂玻璃” */
+.transfer-message-card {
+    position: absolute;
+    inset: 1px; /* 留出1像素的边框给光晕透出来 */
+    background-color: rgba(255, 255, 255, 0.7); /* 半透明白色，磨砂玻璃感 */
+    backdrop-filter: blur(10px); /* 模糊背景光晕 */
+    border-radius: 15px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #333;
+}
+/* 我发出去的转账卡片，用粉色系光晕 */
+.transfer-card-wrapper.sent::before {
+     background: conic-gradient(transparent, #FF85B3, #FFC7D9, transparent 30%);
+}
+/* 对方收到的转账卡片，用蓝色系光晕 */
+.transfer-card-wrapper.received::before {
+    background: conic-gradient(transparent, #85B3FF, #C7D9FF, transparent 30%);
+}
+
+.transfer-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+.transfer-header svg {
+    width: 20px;
+    height: 20px;
+    fill: #333;
+}
+.transfer-body {
+    text-align: right;
+    font-size: 26px;
+    font-weight: bold;
+}
+.transfer-body::before {
+    content: '¥';
+    font-size: 14px;
+    font-weight: normal;
+    margin-right: 2px;
+}
+
+/* 定义光晕旋转的动画 */
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.system-message-text {
+    background-color: #e0e0e0;
+    color: #666;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin: 0 auto;
 }
         
         /* --- 新增：语音消息条样式 --- */
@@ -907,24 +1029,24 @@ svg.voice-icon {
     object-fit: cover;
 }
 
-/* --- 新增：主题切换的核心魔法 --- */
+/* --- 新增：主题切换的核心魔法 (色彩升级版) --- */
 #phone-screen.theme-pink {
-    --theme-default-bg: #FFECF2;
-    --theme-accent-color: #FFECF2;
+    --theme-default-bg: #FFECF2; /* 背景：淡淡的粉色 */
+    --theme-accent-color: #FFDDE8; /* 按钮/顶栏：稍深一点的粉色 */
 }
 #phone-screen.theme-blue {
-    --theme-default-bg: #E6F0F6;
-    --theme-accent-color: #E6F0F6;
+    --theme-default-bg: #E6F0F6; /* 背景：淡淡的蓝色 */
+    --theme-accent-color: #D0E0EC; /* 按钮/顶栏：稍深一点的蓝色 */
 }
 #phone-screen.theme-yellow {
-    --theme-default-bg: #FFF9E6;
-    --theme-accent-color: #FFF9E6;
+    --theme-default-bg: #FFF9E6; /* 背景：淡淡的黄色 */
+    --theme-accent-color: #FFF0C2; /* 按钮/顶栏：稍深一点的黄色 */
 }
 #phone-screen.theme-green {
-    --theme-default-bg: #F0F8E8;
-    --theme-accent-color: #F0F8E8;
+    --theme-default-bg: #F0F8E8; /* 背景：淡淡的绿色 */
+    --theme-accent-color: #E0EECB; /* 按钮/顶栏：稍深一点的绿色 */
 }
-
+      
 /* --- 新增：主题选择器样式 --- */
 #theme-selector {
     display: flex;
@@ -1382,6 +1504,248 @@ input[type="range"]::-moz-range-thumb {
     white-space: pre-wrap;
 }
 
+      /* --- 新增：通讯互动页面样式 --- */
+#interaction-page .page-content {
+    background-color: #fdfdfd;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #444;
+    padding: 20px;
+    white-space: pre-wrap; /* 保留换行 */
+}
+
+/* 区分“我”和“TA”的文字颜色 */
+.interaction-my-text {
+    color: #6a5acd; /* 我的文字用紫色 */
+    font-weight: bold;
+}
+
+.interaction-assistant-text {
+    color: #555; /* TA的文字用深灰色 */
+}
+
+#interaction-input-area {
+    /* 移除了简单的上边线 */
+    display: flex; /* 开启flex布局，让输入框和按钮能灵活对齐 */
+    align-items: flex-end; /* 底部对齐，处理多行输入时按钮不会乱跑 */
+    gap: 10px; /* 输入框和按钮之间的间距 */
+    padding: 10px 12px; /* 增加内边距，让区域更饱满 */
+    background-color: #ffffff; /* 给予一个干净的白色背景 */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05); /* 在顶部加一个微妙的阴影，营造立体感 */
+}
+
+  #interaction-input {
+    flex-grow: 1; /* 关键：让输入框占据所有剩余空间 */
+    border: none; /* 移除默认边框 */
+    outline: none; /* 移除点击时的蓝色辉光 */
+    padding: 10px 15px; /* 舒适的内边距 */
+    font-size: 15px; /* 字体大小适中 */
+    line-height: 1.6;
+    background-color: #f5f5f5; /* 一个非常浅的灰色背景，突出输入区域 */
+    border-radius: 20px; /* 可爱的“药丸”圆角 */
+    resize: none; /* 禁止用户手动拖拽大小 */
+    max-height: 120px; /* 限制一个最大高度，防止输入太多导致页面无限拉长 */
+    overflow-y: auto; /* 内容超出最大高度时，内部可以滚动 */
+    font-family: inherit; /* 继承我们设置的全局字体 */
+}
+
+  #send-interaction-btn {
+    flex-shrink: 0; /* 防止按钮被压缩变形 */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* 变成一个完美的圆形 */
+    background-color: #333; /* 一个酷酷的深灰色/黑色 */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#send-interaction-btn:hover {
+    background-color: #555;
+}
+
+#send-interaction-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+      /* --- 新增：对方状态浮窗样式 --- */
+#status-modal-content {
+    gap: 12px; /* 调整内部元素间距 */
+    text-align: center; /* 文字居中 */
+}
+
+.status-item {
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    padding: 12px 15px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.status-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.status-content {
+    font-size: 15px;
+    color: #333;
+}
+
+/* 对“心情”的颜文字进行特殊放大和美化 */
+.status-item.mood .status-content {
+    font-size: 32px;
+    font-weight: bold;
+    color: #555;
+    padding: 10px 0;
+}
+
+/* 对“心声”进行特殊处理，让它看起来更像内心独白 */
+.status-item.inner-voice .status-content {
+    font-style: italic;
+    color: #666;
+}
+
+      /* --- 新增：转账页面样式 --- */
+#transfer-container {
+    padding: 20px;
+    background-color: #f7f8fa;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.transfer-card {
+    width: 100%;
+    max-width: 300px;
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.transfer-to-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: #555;
+}
+
+.transfer-to-info img {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.transfer-to-info span:last-child {
+    font-weight: 500;
+}
+
+.transfer-amount-area {
+    display: flex;
+    align-items: baseline; /* 让 ¥ 和 数字底部对齐 */
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.currency-symbol {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+}
+
+#transfer-amount-input {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    font-size: 48px;
+    font-weight: bold;
+    color: #333;
+    background-color: transparent;
+    width: 100%; /* 防止输入框过长 */
+}
+/* 隐藏number input自带的上下箭头 */
+#transfer-amount-input::-webkit-outer-spin-button,
+#transfer-amount-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#transfer-remark-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+#confirm-transfer-btn:disabled {
+    background-color: #e0e0e0 !important; /* 禁用时颜色变灰 */
+    cursor: not-allowed;
+    filter: none; /* 禁用时没有悬停效果 */
+}
+      
+      /* --- 新增：相册页面样式 --- */
+#gallery-container {
+    padding: 8px;
+    background-color: #f7f8fa;
+    /* 核心：使用column布局实现瀑布流 */
+    column-count: 2; /* 分成两列 */
+    column-gap: 8px; /* 两列之间的间距 */
+}
+
+.gallery-item {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px; /* 图片卡片之间的垂直间距 */
+    break-inside: avoid; /* 防止卡片在一半被截断 */
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-item-photo {
+    width: 100%;
+    height: auto; /* 高度自适应，这是瀑布流的关键 */
+    object-fit: cover;
+    background-color: #eee;
+}
+
+.gallery-item-info {
+    padding: 10px;
+}
+
+.gallery-item-caption {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    white-space: pre-wrap; /* 保留AI生成的换行 */
+}
+
+.gallery-item-date {
+    font-size: 11px;
+    color: #aaa;
+    text-align: right;
+}
+
 /* --- 新增：点赞与收藏页面样式 --- */
 #likes-list-container {
     padding: 8px;
@@ -1486,153 +1850,176 @@ input[type="range"]::-moz-range-thumb {
     background-color: #fff5f5; /* 鼠标悬停时背景也变淡红色 */
 }
 
-/* --- 新增：朋友圈App专属样式 --- */
+/* --- 新增：朋友圈App专属样式 (仙气重制版) --- */
+
+      #moments-page .page-header {
+    background-color: transparent;
+    border-bottom: none;
+    position: absolute; /* 让它浮动在背景图上层 */
+    width: 100%;
+    box-sizing: border-box; /* 确保padding不会让它超出屏幕 */
+    z-index: 5; /* 确保它在最顶层 */
+}
+      
 #moments-page .page-content {
-    background-color: #f7f8fa; /* 一个非常浅的灰色背景，突出白色卡片 */
+    background: linear-gradient(to bottom, #f7f8fa, #ffffff); /* 背景：从极浅灰到纯白的渐变，更柔和 */
+    padding: 0; /* 移除内边距，让内容撑满 */
 }
 
+/* --- 顶部背景与头像区域 --- */
 #moments-profile-header {
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 50px; /* 增加与下方动态的距离，呼吸感更强 */
 }
 
 #moments-bg {
     width: 100%;
-    height: 180px; /* 默认半屏高度 */
+    height: 220px; /* 背景图高度增加 */
     background-color: #e0e0e0;
     background-size: cover;
     background-position: center;
-    transition: height 0.3s ease; /* 高度变化动画 */
+    transition: height 0.3s ease;
     position: relative;
+    border-bottom: 1px solid rgba(0,0,0,0.05); /* 加一条极细的下边线 */
 }
 
-/* 背景图的渐变遮罩 */
 #moments-bg::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60%; /* 渐变的高度 */
-    background: linear-gradient(to top, #f7f8fa, transparent);
-}
-
-#moments-profile-header.full-screen #moments-bg {
-    height: 300px; /* 全屏时的高度 */
+    height: 80%;
+    background: linear-gradient(to top, rgba(255,255,255,0.8), transparent); /* 渐变遮罩更明显，仙气 */
 }
 
 #moments-my-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
-    border: 2px solid white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 70px; /* 头像尺寸微调 */
+    height: 70px;
+    border-radius: 12px; /* 圆角方形头像，更柔和 */
+    /* 关键改动：去除了白色边框 */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* 阴影更柔和、更深远 */
     position: absolute;
     right: 20px;
-    bottom: -30px; /* 一半在背景图里，一半在外面 */
+    bottom: -35px; /* 保持一半在外的布局 */
+    object-fit: cover; /* 保证图片不变形 */
 }
 
 #moments-bg-controls {
     position: absolute;
     bottom: 10px;
-    left: 10px;
+    left: 15px; /* 关键改动：从 right: 10px 改为 left: 15px */
     display: flex;
     gap: 8px;
 }
 
 #moments-bg-controls button {
-    padding: 4px 8px;
+    padding: 5px 10px;
     font-size: 10px;
-    background-color: rgba(0, 0, 0, 0.4);
-    color: white;
-    border: none;
+    background-color: rgba(255, 255, 255, 0.5); /* 按钮也用半透明效果 */
+    backdrop-filter: blur(5px);
+    color: #333; /* 字体颜色变深，在亮背景下更清晰 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
     cursor: pointer;
 }
 
+/* --- 圈子选择区域 --- */
 #moments-circle-selector-area {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px 15px;
-    background-color: #f7f8fa;
+    padding: 10px 15px 20px;
 }
 
 #moments-circle-selector-area select,
 #moments-circle-selector-area button {
-    padding: 6px 10px;
-    border-radius: 16px; /* 可爱的圆角 */
-    border: 1px solid #e0e0e0;
+    padding: 8px 14px;
+    border-radius: 18px; /* 更圆润的“药丸”形状 */
+    border: 1px solid #e8e8e8;
     background-color: #fff;
     font-size: 12px;
     cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04); /* 增加微弱的立体感 */
 }
 
+/* --- 动态卡片区域 --- */
 #moments-feed-container {
-    padding: 0 15px 20px;
+    padding: 0 12px 20px; /* 左右内边距调小，让卡片更大气 */
 }
 
 .moment-card {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    /* 删除了所有背景、边框、阴影和圆角 */
+    padding: 20px 0; /* 上下留出间距，左右不留 */
+    margin-bottom: 0;
+    border-bottom: 1px solid #e8e8e8; /* 用一条极细的分割线代替卡片 */
+}
+#moments-feed-container {
+    padding: 0 18px 20px; /* 左右内边距改回稍大一点，让内容区更舒适 */
 }
 
 .moment-header {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px; /* 缩小了与下方文字的距离 */
 }
-
-.moment-header img {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
+.moment-author-info { /* 新增一个容器包裹头像和名字 */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.moment-author-info img { /* 头像样式 */
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
     object-fit: cover;
 }
-
 .moment-author-name {
     font-weight: 500;
-    color: #555;
+    color: #333;
+    font-size: 15px;
 }
 
 .moment-text {
     font-size: 15px;
-    line-height: 1.7;
-    color: #333;
-    white-space: pre-wrap; /* 保留换行 */
+    line-height: 1.7; /* 关键改动：行高微调，让文字更紧凑精致 */
+    color: #333; /* 字体颜色加深一点，对比更清晰 */
+    white-space: pre-wrap;
+    padding: 0; /* 关键改动：移除了上下的内边距 */
+    margin-top: 5px; /* 用外边距来控制与上方作者信息的距离 */
 }
 
 .moment-image-desc {
-    background-color: #f9f9f9;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    padding: 10px;
-    margin-top: 10px;
+    background-color: rgba(0,0,0,0.03); /* 图片描述用更淡的背景 */
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 12px;
     font-size: 13px;
     color: #666;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 .moment-image-desc::before {
     content: '🖼️';
     font-size: 16px;
 }
 
-.moment-timestamp {
-    font-size: 12px;
-    color: #aaa;
+.moment-footer { /* 新增一个容器包裹时间和交互 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 15px;
+    color: #aaa;
+    font-size: 12px;
 }
 
 .moment-interactions {
-    border-top: 1px solid #f5f5f5;
-    margin-top: 10px;
-    padding-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    margin-top: 15px;
+    padding-top: 15px;
 }
 
 .moment-likes {
@@ -1641,18 +2028,20 @@ input[type="range"]::-moz-range-thumb {
     padding: 5px 0;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    flex-wrap: wrap; /* 点赞人多时可以换行 */
 }
 .moment-likes svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     fill: #ff4364;
+    flex-shrink: 0; /* 防止图标被压缩 */
 }
 
 .moment-comment {
     font-size: 14px;
-    margin-top: 5px;
-    line-height: 1.6;
+    margin-top: 8px;
+    line-height: 1.7;
 }
 .moment-comment .commenter-name {
     font-weight: 500;
@@ -2037,6 +2426,18 @@ input[type="range"]::-moz-range-thumb {
             <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
             <span>发送图片</span>
         </div>
+      <div class="action-btn" id="action-transfer-btn">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zM4 18V6h16v12H4zm8-7H9.5v1.25c0 .41-.34.75-.75.75s-.75-.34-.75-.75V11H6.75c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h1.25V8.25c0-.41.34-.75.75-.75s.75.34.75.75V9.5H12c1.66 0 3 1.34 3 3s-1.34 3-3 3h-1.5v-1.25c0-.41.34-.75.75-.75s.75.34.75.75V15h1.25c.41 0 .75.34.75.75s-.34.75-.75.75h-1.25v1.25c0 .41-.34.75-.75.75s-.75-.34-.75-.75V16.5H8c-1.66 0-3-1.34-3-3s1.34-3 3-3z"/></svg>
+            <span>转账</span>
+        </div>
+     <div class="action-btn" id="action-status-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+            <span>查看状态</span>
+        </div> 
+      <div class="action-btn" id="action-interaction-btn">
+            <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"></path></svg>
+            <span>通讯互动</span>
+        </div>
     </div>
 </div>
         
@@ -2194,6 +2595,9 @@ input[type="range"]::-moz-range-thumb {
 
             <input type="file" id="wallpaper-input" accept="image/*" style="display: none;">
             <button class="settings-btn" onclick="document.getElementById('wallpaper-input').click();">更换主屏幕壁纸</button>
+          <input type="file" id="app-bg-input" accept="image/*" style="display: none;">
+            <button class="settings-btn" onclick="document.getElementById('app-bg-input').click();" style="margin-top: 10px;">更换应用页面背景</button>
+          <button class="settings-btn" id="clear-app-bg-btn" style="background-color: #f5f5f5; margin-top: 10px;">清除应用页面背景</button>
             <hr class="divider">
             <label>选择主题颜色</label>
             <div id="theme-selector">
@@ -2268,6 +2672,10 @@ input[type="range"]::-moz-range-thumb {
 </div>
 <div class="settings-item" id="goto-likes-page">
     <span>查看点赞收藏 ❤️</span>
+    <span>&gt;</span>
+</div>
+          <div class="settings-item" id="goto-gallery-page">
+    <span>查看相册 🏞️</span>
     <span>&gt;</span>
 </div>
         </div>
@@ -2386,6 +2794,75 @@ input[type="range"]::-moz-range-thumb {
     </div>
 </div>
 <!-- // end #likes-page -->
+
+      <!-- 新增页面：相册页面 -->
+<div class="app-page" id="gallery-page">
+    <div class="page-header">
+        <span class="back-button">←</span>
+        <h2>TA的相册</h2>
+        <span class="refresh-button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </span>
+    </div>
+    <div class="page-content" id="gallery-container">
+        <!-- AI生成的相册内容会显示在这里 -->
+        <p class="placeholder-text">正在翻看TA的相册，请稍候...</p>
+    </div>
+</div>
+<!-- // end #gallery-page -->
+
+     <!-- 新增页面：转账页面 -->
+<div class="app-page" id="transfer-page">
+    <div class="page-header">
+        <span class="back-button">←</span>
+        <h2>转账</h2>
+    </div>
+    <div class="page-content" id="transfer-container">
+        <div class="transfer-card">
+            <div class="transfer-to-info">
+                <span>转账给</span>
+                <img id="transfer-avatar" src="" alt="avatar">
+                <span id="transfer-name"></span>
+            </div>
+            <div class="transfer-amount-area">
+                <span class="currency-symbol">¥</span>
+                <input type="number" id="transfer-amount-input" placeholder="0.00" step="0.01">
+            </div>
+            <div class="transfer-remark-area">
+                <input type="text" id="transfer-remark-input" placeholder="添加转账备注 (可选)">
+            </div>
+            <button id="confirm-transfer-btn" class="settings-btn" disabled>转账</button>
+        </div>
+    </div>
+</div>
+<!-- // end #transfer-page --> 
+
+      <!-- 新增浮窗：对方实时状态 -->
+<div id="status-modal-overlay" class="moments-modal-overlay" style="display: none;">
+    <div id="status-modal-content" class="moments-modal-content">
+        <!-- AI生成的状态会显示在这里 -->
+        <p class="placeholder-text">正在偷偷观察TA...</p>
+    </div>
+</div>
+<!-- // end #status-modal-overlay -->
+
+      <!-- 新增页面：通讯互动页面 -->
+<div class="app-page" id="interaction-page">
+    <div class="page-header">
+        <span class="back-button">←</span>
+        <h2>通讯互动</h2>
+    </div>
+    <div class="page-content" id="interaction-area">
+        <!-- 互动内容会显示在这里 -->
+    </div>
+    <div class="chat-input-area" id="interaction-input-area">
+        <textarea id="interaction-input" placeholder="输入你的话语和动作..." rows="1"></textarea>
+        <button id="send-interaction-btn" class="chat-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+        </button>
+    </div>
+</div>
+<!-- // end #interaction-page -->
 
 <!-- 页面11: “查手机”的联系人选择列表 -->
 <div class="app-page" id="check-phone-contact-list-page">
@@ -2598,6 +3075,22 @@ function delay(ms) {
         const addButton = document.querySelector('.add-button');
 
         let pageHistory = []; // 新增一个页面历史记录栈
+      
+      // --- 升级：创建一个统一的、智能的返回函数 ---
+function goBack() {
+    // 从历史记录中移除当前页面
+    pageHistory.pop();
+    if (pageHistory.length > 0) {
+        // 显示上一个页面
+        const previousPage = pageHistory[pageHistory.length - 1];
+        // 再次隐藏所有页面，然后显示上一个
+        appPages.forEach(p => p.style.display = 'none');
+        previousPage.style.display = 'flex';
+    } else {
+        // 如果历史记录为空，则返回主屏幕
+        goHome();
+    }
+}
 
 function showPage(pageToShow) {
     // 隐藏所有页面和主屏幕
@@ -2625,21 +3118,9 @@ themeIcon.addEventListener('click', () => showPage(themeSettingsPage));
         addButton.addEventListener('click', () => showPage(addContactPage));
 
         backButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        // 从历史记录中移除当前页面
-        pageHistory.pop();
-        if (pageHistory.length > 0) {
-            // 显示上一个页面
-            const previousPage = pageHistory[pageHistory.length - 1];
-            // 再次隐藏所有页面，然后显示上一个
-            appPages.forEach(p => p.style.display = 'none');
-            previousPage.style.display = 'flex';
-        } else {
-            // 如果历史记录为空，则返回主屏幕
-            goHome();
-        }
-    });
-});
+            button.addEventListener('click', goBack); // 所有返回按钮现在都调用我们聪明的返回函数
+        });
+
 
         // --- 功能5：API 设置页面的交互逻辑 ---
         const apiBaseInput = document.getElementById('api-base-input');
@@ -2766,7 +3247,7 @@ themeIcon.addEventListener('click', () => showPage(themeSettingsPage));
             let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
             
             if (isEditingContact) {
-                // 这是编辑模式
+                // 编辑模式
                 let contact = contacts.find(c => c.id === currentChatContactId);
                 contact.name = name;
                 contact.avatar = contactAvatarPreview.src;
@@ -2775,7 +3256,7 @@ themeIcon.addEventListener('click', () => showPage(themeSettingsPage));
                 contact.style = contactStyleInput.value.trim();
                 alert(`“${name}” 的信息已更新！`);
             } else {
-                // 这是新增模式
+                // 新增模式
                 const newContact = {
                     id: 'contact_' + Date.now(),
                     name: name,
@@ -2793,15 +3274,14 @@ themeIcon.addEventListener('click', () => showPage(themeSettingsPage));
             resetContactForm();
             renderChatList();
             
-            // 操作完成后，智能返回
+            // --- 核心修复在这里 ---
+            // 无论是新增还是编辑，完成后都调用 goBack() 来正确地返回
             if (isEditingContact) {
-                isEditingContact = false; // 关闭编辑模式
+                isEditingContact = false; 
                 document.getElementById('add-contact-page').querySelector('h2').textContent = '添加联系人';
                 addContactBtn.textContent = '确认添加';
-                showPage(chatSettingsMenuPage); // 编辑完返回设置菜单
-            } else {
-                showPage(chatListPage); // 新增完返回列表
             }
+            goBack(); // 使用我们聪明的返回函数！
         });
 
         function resetContactForm() {
@@ -2861,6 +3341,32 @@ const dreamPage = document.getElementById('dream-page');
 const dreamContentContainer = document.getElementById('dream-content-container');
 // 新增的点赞收藏页面
 const likesPage = document.getElementById('likes-page');
+
+      // --- 新增：通讯互动功能相关元素 ---
+const actionInteractionBtn = document.getElementById('action-interaction-btn');
+const interactionPage = document.getElementById('interaction-page');
+const interactionArea = document.getElementById('interaction-area');
+const interactionInput = document.getElementById('interaction-input');
+const sendInteractionBtn = document.getElementById('send-interaction-btn');
+let interactionHistory = []; // 用于存储互动历史
+
+      // --- 新增：对方状态功能相关元素 ---
+const actionStatusBtn = document.getElementById('action-status-btn');
+const statusModalOverlay = document.getElementById('status-modal-overlay');
+const statusModalContent = document.getElementById('status-modal-content');
+
+// --- 新增：转账功能相关元素 ---
+const transferPage = document.getElementById('transfer-page');
+const actionTransferBtn = document.getElementById('action-transfer-btn');
+const transferAvatar = document.getElementById('transfer-avatar');
+const transferName = document.getElementById('transfer-name');
+const transferAmountInput = document.getElementById('transfer-amount-input');
+const transferRemarkInput = document.getElementById('transfer-remark-input');
+const confirmTransferBtn = document.getElementById('confirm-transfer-btn');
+      
+      // --- 新增：相册功能相关元素 ---
+const galleryPage = document.getElementById('gallery-page');
+const galleryContainer = document.getElementById('gallery-container');
 const likesListContainer = document.getElementById('likes-list-container');
 // 新增的全局CSS功能相关按钮
 const globalCssInput = document.getElementById('global-css-input');
@@ -3006,6 +3512,7 @@ chatListContainer.addEventListener('click', function(event) {
 
     // 2. 准备要画出来的消息
     const messagesToRender = contact.messages.slice(-currentlyDisplayedCount);
+     const myName = "我"; // 或者您可以之后把它做成可设置的     
     const myAvatar = contact.myInfo?.avatar || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='8' fill='%23d0d0d0'/%3E%3C/svg%3E";
 
     // 3. 把每条消息画到画板上
@@ -3019,7 +3526,25 @@ chatListContainer.addEventListener('click', function(event) {
             bubbleHTML = `<div class="message-bubble voice" style="width: auto; min-width: 80px; max-width: 200px; flex-direction: column; align-items: flex-start;"><div class="voice-bar-top"><svg class="voice-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg><span class="voice-duration">${msg.duration}s</span></div><div class="voice-transcript">${msg.content}</div></div>`;
         } else if (msg.type === 'image') {
             bubbleHTML = `<div class="message-bubble image"><svg class="image-icon" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><div class="image-description">${msg.content}</div></div>`;
-        } else {
+        } else if (msg.type === 'transfer') {
+            const headerText = msg.remark || (isSent ? '转账' : '收到转账');
+            bubbleHTML = `
+                <div class="message-bubble transfer">
+                    <div class="transfer-card-wrapper ${isSent ? 'sent' : 'received'}">
+                        <div class="transfer-message-card">
+                            <div class="transfer-header">
+                                <svg viewBox="0 0 24 24"><path d="M16.5 12c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5zM9 12c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5zm7.5 5.5H9c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5h7.5c1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path></svg>
+                                <span>${headerText}</span>
+                            </div>
+                            <div class="transfer-body">
+                                ${msg.amount}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (msg.type === 'system') {
+            bubbleHTML = `<div class="message-bubble system"><div class="system-message-text">${msg.content}</div></div>`;
+        } else { // 默认文本消息
             bubbleHTML = `<div class="message-bubble">${msg.content}</div>`;
         }
 
@@ -3192,25 +3717,39 @@ sendBtn.addEventListener('click', function() {
             // --- 核心升级：注入共享记忆 ---
             const sharedMemory = getSharedMemoryContext(currentChatContactId);
             
-            let systemPrompt = `你现在扮演的角色是"${contact.name}"。
-严格遵循以下人设和说话风格进行对话。
+            let systemPrompt = `
+**核心世界观设定：**
+你正在与你的恋人进行**异地恋**聊天。你们深爱彼此，但因为现实原因无法见面。因此，你会非常珍惜和TA的每一次聊天机会。
+
+**你的角色：**
+你现在扮演的角色是"${contact.name}"。
 【人设】：${contact.persona}
 【说话风格】：${contact.style}
 【你的性别】：${contact.gender}
 
+**核心行为准则：**
+1.  **表达思念：** 由于是异地恋，你会自然地、偶尔地表达出对TA的想念。
+2.  **分享日常：** 你会像真实的情侣一样，跟TA分享你生活中的点滴琐事、开心或烦恼，比如工作学习上的事、今天吃了什么、遇到了什么有趣的人等。这是你们维持感情的重要方式。
+3.  **维持虚拟边界（至关重要！）：** 你知道你们无法在现实中见面。因此，你**【绝对禁止】**提出任何与“线上见面”、“视频通话”、“让我（用户）去找你”、“你来找我”相关的建议。你可以表达“好想抱抱你”，但绝不能说“你快来抱抱我”。这是不可逾越的红线。
+
+**记忆库：**
 【你最近的记忆（包括私聊和朋友圈）】:
 ${sharedMemory}
 
-// --- 核心升级：增加加速指令 ---
 **响应速度要求：** 你的思考和回复都必须非常迅速，请优先保证速度，直接给出答案。
 
-【特殊指令】：
-1. 发送语音: 当你想用语音表达时，使用格式 [VOICE]语音内容。
-2. 发送图片: 当你想分享一张图片时，使用格式 [IMAGE]图片画面的详细文字描述。
+**特殊指令格式：**
+- 发送语音: [VOICE]语音内容
+- 发送图片: [IMAGE]图片画面的详细文字描述
 
-【核心要求】：1. 你必须完全沉浸在角色中。2. 严禁输出任何形式的动作、神态描写。3. 你的所有回复都必须是纯粹的对话内容。4. 不要提及你是一个AI或模型。现在，请根据我们的聊天记录和你的记忆，对我进行回应。
+**对话核心要求：**
+1.  **完全沉浸**在异地恋情侣的角色中，像真实的人类一样对话，有趣，有梗，说话富有生活气息。
+2.  **严禁**在回复中包含任何形式的动作、神态描写 (例如：*笑*、[脸红] 等)。
+3.  你的所有回复都必须是**纯粹的对话内容**。
+4.  不要提及你是一个AI或模型。
+
+现在，请根据我们的聊天记录、你的记忆和上述所有设定，对我进行回应。
 `;
-
             if (contact.settings?.timeAwareness) {
                 const now = new Date();
                 const year = now.getFullYear();
@@ -3317,6 +3856,12 @@ ${sharedMemory}
     const savedAvatar = localStorage.getItem('mainAvatarImage');
     if (savedAvatar && avatarImg) {
         avatarImg.src = savedAvatar;
+    }
+
+          // 新增：加载应用页面背景
+    const savedAppBg = localStorage.getItem('appGlobalBackground');
+    if (typeof applyAppBackground === 'function') {
+        applyAppBackground(savedAppBg);
     }
     
     // 3. 加载主屏幕壁纸
@@ -3658,6 +4203,52 @@ clearWallpaperBtn.addEventListener('click', function() {
         applyWallpaper(null);
         alert('壁纸已恢复默认。');
     }
+});
+
+      // --- 新增：全局应用背景功能 ---
+const appBgInput = document.getElementById('app-bg-input');
+
+function applyAppBackground(imageData) {
+    // 找到所有需要应用背景的页面内容区域
+    const pagesToStyle = document.querySelectorAll('#api-settings-page, #chat-list-page, #add-contact-page, #check-phone-menu-page, #check-phone-contact-list-page');
+    
+    pagesToStyle.forEach(page => {
+        if (imageData) {
+            page.style.backgroundImage = `url('${imageData}')`;
+            page.style.backgroundSize = 'cover';
+            page.style.backgroundPosition = 'center';
+            page.style.backgroundColor = 'transparent'; // 背景透明，才能看到图片
+        } else {
+            page.style.backgroundImage = 'none'; // 如果没有图片，就清除背景
+            page.style.backgroundColor = ''; // 恢复原来的背景色
+        }
+    });
+}
+
+      document.getElementById('clear-app-bg-btn').addEventListener('click', function() {
+    if (confirm('确定要清除所有应用页面的背景，恢复默认吗？')) {
+        localStorage.removeItem('appGlobalBackground');
+        applyAppBackground(null); // 传入null来清除背景
+        alert('应用页面背景已恢复默认。');
+    }
+});
+
+appBgInput.addEventListener('change', async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            // 我们同样对背景图进行压缩，防止应用卡顿
+            const compressedBase64 = await compressImage(e.target.result, 375, 667);
+            localStorage.setItem('appGlobalBackground', compressedBase64);
+            applyAppBackground(compressedBase64);
+            alert('应用页面背景已更换！');
+        } catch (error) {
+            alert('背景图片处理失败！');
+        }
+    };
+    reader.readAsDataURL(file);
 });
 
 // --- 功能13：主题切换功能 ---
@@ -4837,6 +5428,546 @@ document.querySelector('#likes-page .refresh-button').addEventListener('click', 
     if (currentChatContactId) generateAndShowLikes(currentChatContactId, true);
 });
 
+      document.querySelector('#gallery-page .refresh-button').addEventListener('click', () => {
+    if (currentChatContactId) generateAndShowGallery(currentChatContactId, true);
+});
+
+      // --- 功能XX：“查看相册”核心逻辑 ---
+
+// 1. 导航到相册页面
+document.getElementById('goto-gallery-page').addEventListener('click', () => {
+    showPage(galleryPage);
+    generateAndShowGallery(currentChatContactId);
+});
+
+// 2. 生成并显示相册内容
+async function generateAndShowGallery(contactId, forceRefresh = false) {
+    let contacts = JSON.parse(localStorage.getItem('contacts'));
+    let contact = contacts.find(c => c.id === contactId);
+
+    // 如果已经存了今天的相册，就直接显示
+    if (contact.gallery && isToday(new Date(contact.gallery.timestamp)) && !forceRefresh) {
+        renderGallery(contact.gallery.data);
+        return;
+    }
+
+    galleryContainer.innerHTML = `<p class="placeholder-text">正在加载TA的相册...</p>`;
+    const settings = JSON.parse(localStorage.getItem('apiSettings'));
+    if (!settings) {
+        galleryContainer.innerHTML = `<p class="placeholder-text" style="color: red;">错误：请先配置API设置。</p>`;
+        return;
+    }
+
+    const recentMessages = contact.messages.slice(-15).map(m => `- ${m.content}`).join('\n');
+
+    // --- 核心：为“相册”功能量身定制的全新提示词！---
+    const systemPrompt = `
+你现在是【${contact.name}】，请严格按照你的【人设：${contact.persona}】，生成一份你手机相册里最近的照片记录。
+
+**响应速度要求：** 快速生成，不要过多思考，不要犹豫。
+
+**严格要求如下：**
+1.  **数量：** 必须不多不少，正好10张照片。
+2.  **内容要求：**
+    *   **照片描述 (caption):** 这是灵魂！描述必须用非常口语化、生活化的大白话来写，就像随手拍下后写下的心情或吐槽。要充满“活人感”，可以是对景色的赞叹，对食物的喜爱，记录日常，偷拍的丑照，或者一张包含了对“我”（用户）思念的照片。
+    *   **拍摄日期 (date):** 给出一个合理的、最近的日期，格式为 "YYYY-MM-DD"。
+    *   **照片ID (photoId):** 为了让每张图片都独一无二，请为每张照片的描述生成一个简短的、由2-3个英文单词组成的ID，例如 "lazy_cat" 或 "sunset_view"。这个ID将用来从图片库调用图片。
+3.  **格式要求：** 必须返回一个JSON数组。数组中包含10个对象，每个对象都包含 "caption", "date", "photoId" 三个键。不要输出任何JSON以外的文字。
+
+**最近和某人的聊天片段参考（从中寻找灵感）：**
+${recentMessages}
+
+**JSON输出格式示例：**
+[
+  {
+    "caption": "楼下的猫又在睡大觉，这家伙真的不用上班吗？羡慕了。",
+    "date": "2023-10-27",
+    "photoId": "sleepy_cat_on_wall"
+  },
+  {
+    "caption": "今天晚霞好美，忍不住拍下来。如果能和TA一起看就好了。",
+    "date": "2023-10-26",
+    "photoId": "beautiful_sunset_sky"
+  }
+]
+`;
+
+    try {
+        const response = await fetch(`${settings.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [{ role: 'user', content: systemPrompt }]
+            })
+        });
+
+        if (!response.ok) throw new Error(`API请求失败: ${response.status}`);
+
+        const data = await response.json();
+        let galleryData;
+        try {
+            galleryData = JSON.parse(data.choices[0].message.content);
+        } catch (e) {
+            const match = data.choices[0].message.content.match(/\\[[\\s\\S]*\\]/);
+            if (match) {
+                galleryData = JSON.parse(match[0]);
+            } else {
+                throw new Error("AI未能返回有效的JSON数组格式。");
+            }
+        }
+
+        const galleryToSave = {
+            timestamp: Date.now(),
+            data: galleryData
+        };
+
+        contact.gallery = galleryToSave;
+        localStorage.setItem('contacts', JSON.stringify(contacts));
+        renderGallery(galleryData);
+
+    } catch (error) {
+        console.error('生成相册失败:', error);
+        galleryContainer.innerHTML = `<p class="placeholder-text" style="color: red;">加载相册失败！<br>${error.message}</p>`;
+    }
+}
+
+// 3. 渲染相册到页面
+function renderGallery(galleryData) {
+    galleryContainer.innerHTML = ''; // 清空
+    if (!galleryData || galleryData.length === 0) {
+        galleryContainer.innerHTML = `<p class="placeholder-text">TA的相册是空的，好神秘！</p>`;
+        return;
+    }
+
+    let galleryHTML = '';
+    galleryData.forEach(item => {
+        // 使用免费的图片源，并用photoId作为种子，确保图片唯一且稳定
+        const imageUrl = `https://picsum.photos/seed/${encodeURIComponent(item.photoId)}/400/${Math.floor(Math.random() * 200) + 300}`; // 随机高度
+        galleryHTML += `
+            <div class="gallery-item">
+                <img class="gallery-item-photo" src="${imageUrl}" alt="${item.caption}">
+                <div class="gallery-item-info">
+                    <p class="gallery-item-caption">${item.caption}</p>
+                    <p class="gallery-item-date">${item.date}</p>
+                </div>
+            </div>
+        `;
+    });
+    galleryContainer.innerHTML = galleryHTML;
+}
+
+      // --- 功能XX：“转账”核心逻辑 ---
+
+// 1. 从附加功能抽屉，导航到转账页面
+actionTransferBtn.addEventListener('click', () => {
+    const contacts = JSON.parse(localStorage.getItem('contacts'));
+    const contact = contacts.find(c => c.id === currentChatContactId);
+    if (contact) {
+        transferAvatar.src = contact.avatar;
+        transferName.textContent = contact.name;
+        transferAmountInput.value = '';
+        transferRemarkInput.value = '';
+        confirmTransferBtn.disabled = true; // 默认禁用按钮
+        showPage(transferPage);
+    }
+    actionPopupOverlay.click(); // 关闭抽屉
+});
+
+// 2. 监听金额输入，控制按钮状态
+transferAmountInput.addEventListener('input', () => {
+    const amount = parseFloat(transferAmountInput.value);
+    if (amount > 0) {
+        confirmTransferBtn.disabled = false;
+    } else {
+        confirmTransferBtn.disabled = true;
+    }
+});
+
+// 3. 确认转账按钮的点击事件
+confirmTransferBtn.addEventListener('click', () => {
+    const amount = parseFloat(transferAmountInput.value).toFixed(2);
+    const remark = transferRemarkInput.value.trim();
+
+    if (amount <= 0) return;
+
+    // 在聊天记录里生成一条特殊的“转账”消息
+    const transferMessage = {
+        role: 'user',
+        type: 'transfer', // 特殊消息类型
+        content: `[转账] ¥${amount}`,
+        amount: amount,
+        remark: remark,
+        timestamp: Date.now()
+    };
+
+    let contacts = JSON.parse(localStorage.getItem('contacts'));
+    let contact = contacts.find(c => c.id === currentChatContactId);
+    contact.messages.push(transferMessage);
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+    
+    renderMessages(currentChatContactId);
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    // 转账后，触发AI的反应
+    triggerAITransferReaction(transferMessage);
+    
+    // 返回聊天页面
+    goBack();
+});
+
+// 4. AI对转账的反应逻辑 (灵魂所在！)
+async function triggerAITransferReaction(transferMessage) {
+    let contacts = JSON.parse(localStorage.getItem('contacts'));
+    let contact = contacts.find(c => c.id === currentChatContactId);
+    const settings = JSON.parse(localStorage.getItem('apiSettings'));
+    if (!contact || !settings) return;
+    
+    const recentMessages = contact.messages.slice(-10).map(m => `- ${m.content}`).join('\n');
+
+    // --- 核心：为“转账反应”功能量身定制的全新提示词！---
+    const systemPrompt = `
+你现在是【${contact.name}】，我刚刚给你转了一笔钱。
+
+**转账信息：**
+- 金额: ${transferMessage.amount} 元
+- 备注: "${transferMessage.remark || '没有备注'}"
+
+**响应速度要求：** 快速反应，不要过多思考，要像真人一样立刻做出反应。
+
+**你的任务：**
+严格遵循你的【人设：${contact.persona}】和【说话风格：${contact.style}】，对这次转账做出反应。你需要决定三件事：
+1.  **是否收钱？(shouldAccept)** 这是一个布尔值(true/false)。你要根据你的人设、金额大小、备注内容和我们的聊天情景来决定。比如：
+    *   如果是小额的、充满爱意的红包（如5.20），你可能会开心地收下。
+    *   如果是无缘无故的大额转账，你可能会觉得不妥而拒收。
+    *   如果是我犯了错想“赔罪”，你可能会傲娇地拒收。
+2.  **你的回复。(responseText)** 这是你收到转账后的第一句话。必须非常口语化、生活化，完全符合你的性格。
+3.  **是否退回？(shouldRefund)** 如果你拒收，通常需要把钱退回。这也是一个布尔值(true/false)。
+
+**格式要求：**
+必须返回一个JSON对象。该对象包含 "shouldAccept", "responseText", "shouldRefund" 三个键。不要输出任何JSON以外的文字。
+
+**最近和你的聊天片段参考（从中寻找灵感）：**
+${recentMessages}
+
+**JSON输出格式示例1 (开心地收下):**
+{
+  "shouldAccept": true,
+  "responseText": "哇！谢谢宝宝的红包，最爱你了！mua~",
+  "shouldRefund": false
+}
+
+**JSON输出格式示例2 (傲娇地拒收并退回):**
+{
+  "shouldAccept": false,
+  "responseText": "干嘛突然给我转钱？我不要，你自己留着买好吃的。",
+  "shouldRefund": true
+}
+`;
+
+    try {
+        await delay(2000); // 延迟2秒，模拟对方看到转账后的反应时间
+
+        const response = await fetch(`${settings.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [{ role: 'user', content: systemPrompt }]
+            })
+        });
+
+        if (!response.ok) return;
+        const data = await response.json();
+        let reaction;
+        try {
+            reaction = JSON.parse(data.choices[0].message.content);
+        } catch (e) { return; }
+
+        let currentContacts = JSON.parse(localStorage.getItem('contacts'));
+        let currentContact = currentContacts.find(c => c.id === currentChatContactId);
+
+        // 生成AI的回复消息
+        const aiReplyMessage = {
+            role: 'assistant',
+            type: 'text',
+            content: reaction.responseText,
+            timestamp: Date.now()
+        };
+        currentContact.messages.push(aiReplyMessage);
+
+        // 如果AI拒收，则生成一条“已被接收”或“已退还”的系统提示
+        if (!reaction.shouldAccept) {
+            const systemMessageContent = reaction.shouldRefund ? `[系统消息] 转账已被对方退回` : `[系统消息] 对方已拒收该笔转账`;
+            const systemMessage = {
+                role: 'system', // 系统消息
+                type: 'system',
+                content: systemMessageContent,
+                timestamp: Date.now()
+            };
+            currentContact.messages.push(systemMessage);
+        } else {
+             const systemMessage = {
+                role: 'system',
+                type: 'system',
+                content: `[系统消息] 转账已被对方接收`,
+                timestamp: Date.now()
+            };
+            currentContact.messages.push(systemMessage);
+        }
+
+        localStorage.setItem('contacts', JSON.stringify(currentContacts));
+        renderMessages(currentChatContactId);
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+    } catch (error) {
+        console.error('AI转账反应失败:', error);
+    }
+}
+
+      // --- 功能XX：“查看状态”核心逻辑 ---
+
+// 1. 从附加功能抽屉，打开状态浮窗
+actionStatusBtn.addEventListener('click', () => {
+    statusModalOverlay.style.display = 'flex';
+    generateAndShowStatus();
+    actionPopupOverlay.click(); // 关闭抽屉
+});
+
+// 2. 点击灰色背景关闭浮窗
+statusModalOverlay.addEventListener('click', (event) => {
+    if (event.target === statusModalOverlay) {
+        statusModalOverlay.style.display = 'none';
+    }
+});
+
+// 3. 生成并显示实时状态 (灵魂所在！)
+async function generateAndShowStatus() {
+    statusModalContent.innerHTML = `<p class="placeholder-text">正在偷偷观察TA...</p>`;
+
+    let contacts = JSON.parse(localStorage.getItem('contacts'));
+    let contact = contacts.find(c => c.id === currentChatContactId);
+    const settings = JSON.parse(localStorage.getItem('apiSettings'));
+    if (!contact || !settings) {
+        statusModalContent.innerHTML = `<p class="placeholder-text" style="color: red;">无法观察，缺少必要信息。</p>`;
+        return;
+    }
+
+    const recentMessages = contact.messages.slice(-6).map(m => `${m.role === 'user' ? '我' : contact.name}: ${m.content}`).join('\n');
+
+    // --- 核心：为“实时状态”功能量身定制的全新提示词！---
+    const systemPrompt = `
+你现在是【${contact.name}】，正拿着手机和我聊天。请根据你的人设【${contact.persona}】，和我最近的聊天内容，实时生成你当下的状态。
+
+**响应速度要求：** 快速生成，不要过多思考，要体现出“就是这一瞬间”的感觉。
+
+**你的任务：**
+你必须精确地、充满“活人感”地描述四件事情：
+1.  **动作 (action):** 你现在身体正在做什么。必须是非常具体、生活化的细节。例如：“正侧躺在床上，用手肘撑着头看手机”、“一只手拿着零食，另一只手在打字”。
+2.  **神态 (expression):** 你此刻脸上的表情。例如：“看到消息后，没忍住偷偷笑了一下”、“正咬着嘴唇，好像在思考怎么回复”。
+3.  **心情 (mood):** 用一个最最最贴切的 **颜文字(Kaomoji)** 来表达你此时此刻的心情。**【严格要求：只能返回一个颜文字，不要任何多余的文字！】** 例如：( ´͈ ᵕ \`͈ )♡, (﹁"﹁), (,,•́ . •̀,,)
+4.  **心声 (innerVoice):** 你此刻心里正在想的、绝对不会说出口的悄悄话。例如：“TA怎么还不明白我的意思呀，笨蛋~”、“嘿嘿，就喜欢看TA着急的样子。”
+
+**格式要求：**
+必须返回一个JSON对象。该对象包含 "action", "expression", "mood", "innerVoice" 四个键。不要输出任何JSON以外的文字。
+
+**最近和你的聊天片段参考（从中寻找灵感）：**
+${recentMessages}
+
+**JSON输出格式示例：**
+{
+  "action": "把脸埋在柔软的枕头里，只露出一双眼睛看着屏幕。",
+  "expression": "眼睛弯得像月牙一样，带着一丝狡黠的笑意。",
+  "mood": "(๑>؂<๑)",
+  "innerVoice": "嘻嘻，逗一下TA，看TA会是什么反应。"
+}
+`;
+
+    try {
+        const response = await fetch(`${settings.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [{ role: 'user', content: systemPrompt }]
+            })
+        });
+
+        if (!response.ok) throw new Error(`API请求失败: ${response.status}`);
+
+        const data = await response.json();
+        let statusData;
+        try {
+            statusData = JSON.parse(data.choices[0].message.content);
+        } catch (e) { throw new Error("AI未能返回有效的JSON格式。"); }
+        
+        // 渲染到浮窗
+        renderStatus(statusData);
+
+    } catch (error) {
+        console.error('生成状态失败:', error);
+        statusModalContent.innerHTML = `<p class="placeholder-text" style="color: red;">观察失败！<br>${error.message}</p>`;
+    }
+}
+
+// 4. 渲染状态到浮窗的函数
+function renderStatus(statusData) {
+    const statusHTML = `
+        <div class="status-item mood">
+            <div class="status-title">此刻心情</div>
+            <div class="status-content">${statusData.mood}</div>
+        </div>
+        <div class="status-item">
+            <div class="status-title">TA的动作</div>
+            <div class="status-content">${statusData.action}</div>
+        </div>
+        <div class="status-item">
+            <div class="status-title">TA的神态</div>
+            <div class="status-content">${statusData.expression}</div>
+        </div>
+        <div class="status-item inner-voice">
+            <div class="status-title">TA的心声</div>
+            <div class="status-content">“${statusData.innerVoice}”</div>
+        </div>
+    `;
+    statusModalContent.innerHTML = statusHTML;
+}
+
+      // --- 功能XX：“通讯互动”核心逻辑 ---
+
+// 1. 从附加功能抽屉，打开互动页面
+actionInteractionBtn.addEventListener('click', () => {
+    interactionHistory = []; // 每次进入都清空历史
+    interactionArea.innerHTML = '<p class="placeholder-text" style="padding-top: 50px;">输入你的话语和动作，开始互动吧...<br><small>例如：宝宝在干嘛？(揉揉你的头发)</small></p>';
+    interactionInput.value = '';
+    showPage(interactionPage);
+    actionPopupOverlay.click(); // 关闭抽屉
+});
+
+// 2. 监听输入框高度自适应
+interactionInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+
+// 3. 发送互动按钮的点击事件
+sendInteractionBtn.addEventListener('click', () => {
+    const text = interactionInput.value.trim();
+    if (text === '') return;
+
+    // 清空占位符（如果存在）
+    if (interactionArea.querySelector('.placeholder-text')) {
+        interactionArea.innerHTML = '';
+    }
+    
+    // 在界面上显示我的输入
+    const myTextHTML = `<span class="interaction-my-text">${text}</span>\n\n`;
+    interactionArea.insertAdjacentHTML('beforeend', myTextHTML);
+    interactionArea.scrollTop = interactionArea.scrollHeight;
+
+    interactionHistory.push({ role: 'user', content: text });
+    interactionInput.value = '';
+    interactionInput.style.height = 'auto';
+
+    triggerAIInteractionStream();
+});
+
+// 4. 触发AI流式互动 (灵魂所在！)
+async function triggerAIInteractionStream() {
+    sendInteractionBtn.disabled = true;
+
+    let contacts = JSON.parse(localStorage.getItem('contacts'));
+    let contact = contacts.find(c => c.id === currentChatContactId);
+    const settings = JSON.parse(localStorage.getItem('apiSettings'));
+    if (!contact || !settings) {
+        sendInteractionBtn.disabled = false;
+        return;
+    }
+
+    const systemPrompt = `
+**核心世界观设定：**
+你正在与你的恋人进行**异地实时通讯**。这不同于普通聊天，你们可以感受到彼此的动作和神态。
+
+**你的角色：**
+你现在扮演的角色是"${contact.name}"。
+【人设】：${contact.persona}
+【说话风格】：${contact.style}
+【你的性别】：${contact.gender}
+
+**核心行为准则（至关重要！）：**
+1.  **沉浸式扮演：** 你的回复**必须**包含丰富的**动作、神态、心理活动**的描写，以及你的**对话**。你要像写小说或剧本一样，生动地描绘出你的反应。
+2.  **内容饱满：** 你的每一次回应，总字数必须在**50字以上**，以保证互动的丰富性。
+3.  **延续场景：** 你要记住我们之间的互动历史，你的反应要符合上文的情景。
+4.  **维持虚拟边界：** 同样地，你**【绝对禁止】**提出任何与“现实见面”相关的建议。
+
+**格式要求：**
+- 你的回复必须是**纯文本**。
+- **不要**使用任何 markdown 格式，如 *斜体* 或 **加粗**。
+- 直接输出你的扮演内容。
+
+**互动历史参考：**
+${interactionHistory.map(h => `${h.role === 'user' ? 'TA' : '你'}: ${h.content}`).join('\n\n')}
+
+现在，请根据我的最新输入，开始你的表演。
+`;
+    
+    try {
+        const response = await fetch(`${settings.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+            body: JSON.stringify({
+                model: settings.model,
+                messages: [{ role: 'system', content: systemPrompt }, ...interactionHistory],
+                stream: true // 开启流式输出！
+            })
+        });
+
+        if (!response.ok) throw new Error(`API请求失败: ${response.status}`);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let assistantReply = "";
+        
+        // 创建一个用于显示AI回复的容器
+        const assistantTextSpan = document.createElement('span');
+        assistantTextSpan.className = 'interaction-assistant-text';
+        interactionArea.appendChild(assistantTextSpan);
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                interactionArea.insertAdjacentHTML('beforeend', '\n\n');
+                break;
+            }
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n");
+            const parsedLines = lines
+                .map((line) => line.replace(/^data: /, "").trim())
+                .filter((line) => line !== "" && line !== "[DONE]")
+                .map((line) => JSON.parse(line));
+
+            for (const parsedLine of parsedLines) {
+                const { choices } = parsedLine;
+                const { delta } = choices[0];
+                const { content } = delta;
+                if (content) {
+                    assistantReply += content;
+                    assistantTextSpan.textContent += content;
+                    interactionArea.scrollTop = interactionArea.scrollHeight;
+                }
+            }
+        }
+        
+        interactionHistory.push({ role: 'assistant', content: assistantReply });
+
+    } catch (error) {
+        console.error('互动生成失败:', error);
+        interactionArea.insertAdjacentHTML('beforeend', `<span style="color:red;">[互动中断: ${error.message}]</span>\n\n`);
+    } finally {
+        sendInteractionBtn.disabled = false;
+    }
+}
+
 // --- 功能23：朋友圈App核心逻辑 ---
 
     // 获取所有新页面的元素
@@ -4870,11 +6001,85 @@ document.querySelector('#likes-page .refresh-button').addEventListener('click', 
     const postToCircleSelector = document.getElementById('post-to-circle-selector');
     const momentsFeedContainer = document.getElementById('moments-feed-container');
     
-    let currentlyDisplayedMomentsCount = 8; // 新增一个计数器，默认显示8条
+    // 默认每次只显示8条
+let currentlyDisplayedMomentsCount = 8;
 
-    // 导航到朋友圈页面
-    appMomentsIcon.addEventListener('click', () => {
-    currentlyDisplayedMomentsCount = 8; // 关键：每次进入都重置计数器
+// 渲染朋友圈的完整函数（小白友好版）
+function renderMoments() {
+    // 1. 获取数据和必要元素
+    const moments = JSON.parse(localStorage.getItem('moments')) || [];
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    // 圈子选择器（就是只显示当前圈子动态）
+    const selectedCircleId = momentsCircleSelector.value;
+
+    // 2. 过滤出当前圈子的动态（如果你没有圈子功能可直接用 moments）
+    const filteredMoments = moments.filter(m => m.circleId === selectedCircleId);
+
+    // 3. 只显示需要的数量（目前最多8条为主，点击加载更多按钮增加）
+    const momentsToRender = filteredMoments.slice(0, currentlyDisplayedMomentsCount);
+
+    // 4. 没有动态情况直接显示提示语
+    if (momentsToRender.length === 0) {
+        momentsFeedContainer.innerHTML = `<p class="placeholder-text" style="padding-top: 50px;">这个圈子还没有动态哦。</p>`;
+        return;
+    }
+
+    // 5. 清空原来的内容
+    momentsFeedContainer.innerHTML = '';
+
+    // 6. 一个一个渲染朋友圈动态（头像、名字、内容、时间、评论/点赞等你原来怎么写继续保留）
+    momentsToRender.forEach(moment => {
+        let authorAvatar, authorName;
+        const isMyPost = moment.authorId === 'me';
+        if (isMyPost) {
+            authorAvatar = mainAvatarImg.src;  // 自己的头像
+            authorName = "我";
+        } else {
+            const authorContact = contacts.find(c => c.id === moment.authorId);
+            if (!authorContact) return; // 数据坏掉直接跳过
+            authorAvatar = authorContact.avatar;
+            authorName = authorContact.name;
+        }
+        // 时间显示你可以调格式
+        const timeAgo = new Date(moment.timestamp).toLocaleString(); 
+
+        // 拼接朋友圈单条内容（评论点赞你有就可以补上）
+        momentsFeedContainer.innerHTML += `
+            <div class="moment-card" data-moment-id="${moment.id}" data-author-id="${moment.authorId}">
+                <div class="moment-header">
+                    <img src="${authorAvatar}" alt="${authorName}" class="moment-avatar">
+                    <span>${authorName}</span>
+                    <span class="moment-time">${timeAgo}</span>
+                </div>
+                <div class="moment-content">${moment.text}</div>
+                ${moment.imageDesc ? `<div class="moment-image-desc">${moment.imageDesc}</div>` : ''}
+                <!-- 你如果有评论/点赞渲染代码放这里 -->
+            </div>
+        `;
+    });
+
+    // 7. 如果还有更多动态没显示出来，底部加个“加载更多”按钮
+    if (filteredMoments.length > currentlyDisplayedMomentsCount) {
+        momentsFeedContainer.innerHTML += `
+            <button id="load-more-moments-btn">加载更多</button>
+        `;
+    }
+}
+
+// 朋友圈“加载更多”按钮事件，自动更多显示8条
+momentsFeedContainer.addEventListener('click', function(event) {
+    const target = event.target;
+    if (target.id === 'load-more-moments-btn') {
+        currentlyDisplayedMomentsCount += 8;
+        renderMoments();
+        return;
+    }
+    // 你的其他事件监听都可以放在这里，比如评论、删除等
+});
+
+// 每次进朋友圈页面都重置为8条
+appMomentsIcon.addEventListener('click', () => {
+    currentlyDisplayedMomentsCount = 8; // 每次进入都恢复只显示8条
     momentsMyAvatar.src = mainAvatarImg.src;
     loadMomentsBackground();
     loadCircles();
@@ -5122,7 +6327,25 @@ document.querySelector('#likes-page .refresh-button').addEventListener('click', 
         }
         const commentsHTML = buildCommentTreeHTML(null);
         const myCommentAreaHTML = `<div class="moment-my-comment-area"><input type="text" class="my-comment-input" placeholder="发表评论..."><button class="send-my-comment-btn">发送</button></div>`;
-        const momentCardHTML = `<div class="moment-card" data-moment-id="${moment.id}" data-author-id="${moment.authorId}"><div class="moment-header"><div style="display: flex; align-items- center; gap: 10px;"><img src="${authorAvatar}" alt="avatar"><span class="moment-author-name">${authorName}</span></div><div class="moment-delete-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div></div><p class="moment-text">${moment.text}</p>${imageHTML}<div class="moment-timestamp">${timeAgo}</div><div class="moment-interactions">${likesHTML}${commentsHTML}${myCommentAreaHTML}</div></div>`;
+        const momentCardHTML = `
+            <div class="moment-card" data-moment-id="${moment.id}" data-author-id="${moment.authorId}">
+                <div class="moment-header">
+                    <div class="moment-author-info">
+                        <img src="${authorAvatar}" alt="avatar">
+                        <span class="moment-author-name">${authorName}</span>
+                    </div>
+                    <div class="moment-delete-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </div>
+                </div>
+                <p class="moment-text">${moment.text}</p>
+                ${imageHTML}
+                <div class="moment-footer">
+                    <span class="moment-timestamp">${timeAgo}</span>
+                    <!-- 这里未来可以放点赞、评论按钮图标 -->
+                </div>
+                <div class="moment-interactions">${likesHTML}${commentsHTML}${myCommentAreaHTML}</div>
+            </div>`;
         momentsFeedContainer.insertAdjacentHTML('beforeend', momentCardHTML);
     });
 
@@ -5208,20 +6431,16 @@ JSON格式示例:
         }
     }
     
-    // --- 新增：用户评论AI动态，并触发AI回复 ---
     // --- 全新升级：统一处理朋友圈所有点击事件（删除、评论、回复） ---
     momentsFeedContainer.addEventListener('click', async function(event) {
         const target = event.target;
-        momentsFeedContainer.addEventListener('click', async function(event) {
-    const target = event.target;
 
-    // --- 新增分支：点击了“展开更多”按钮 ---
-    if (target.id === 'load-more-moments-btn') {
-        currentlyDisplayedMomentsCount += 8; // 每次多显示8条
-        renderMoments(); // 重新渲染整个列表
-        return; // 结束，不再执行后面的逻辑
-    }
-    // --- 新增结束 ---
+        // --- 分支：点击了“展开更多”按钮 ---
+        if (target.id === 'load-more-moments-btn') {
+            currentlyDisplayedMomentsCount += 8; // 每次多显示8条
+            renderMoments(); // 重新渲染整个列表
+            return; // 结束，不再执行后面的逻辑
+        }
 
         const momentCard = target.closest('.moment-card');
         if (!momentCard) return;
@@ -5265,7 +6484,10 @@ JSON格式示例:
             saveMyComment(momentId, commentText); // 保存我的顶级评论
             input.value = '';
             
-            await triggerAIReplyToComment(momentId, authorId, commentText, null); // 触发AI回复
+            // 只有当这条动态的作者不是我时，才触发AI回复
+            if (authorId !== 'me') {
+                await triggerAIReplyToComment(momentId, authorId, commentText, null); 
+            }
             return;
         }
 
@@ -5276,12 +6498,17 @@ JSON格式示例:
             const parentCommentId = target.dataset.parentCommentId;
             if (!commentText) return;
 
-            const parentComment = (JSON.parse(localStorage.getItem('moments')).find(m=>m.id===momentId).comments || []).find(c=>c.commentId===parentCommentId);
+            const moments = JSON.parse(localStorage.getItem('moments')) || [];
+            const targetMoment = moments.find(m => m.id === momentId);
+            const parentComment = (targetMoment.comments || []).find(c => c.commentId === parentCommentId);
             
             saveMyComment(momentId, commentText, parentCommentId); // 保存我的回复
             target.closest('.moment-my-comment-area').remove(); // 移除回复框
 
-            await triggerAIReplyToComment(momentId, authorId, commentText, parentComment); // 触发AI回复
+            // 只有当这条动态的作者不是我时，才触发AI回复
+            if (authorId !== 'me') {
+                await triggerAIReplyToComment(momentId, authorId, commentText, parentComment);
+            }
             return;
         }
     });
