@@ -2297,6 +2297,12 @@ input[type="range"]::-moz-range-thumb {
                         <p class="placeholder-text">点击“拉取模型”后，可用的模型会显示在这里。</p>
                     </div>
                     <button id="save-settings-btn" class="settings-btn">保存模型设置</button>
+                    <!-- 新增：数据导出与导入功能 -->
+<hr class="divider">
+<label>数据管理</label>
+<button id="export-data-btn" class="settings-btn" style="background-color: #6c757d; color: white;">导出全部数据</button>
+<input type="file" id="import-data-input" accept=".json,.txt" style="display: none;">
+<button id="import-data-btn" class="settings-btn" style="background-color: #28a745; color: white; margin-top: 10px;">导入数据文件</button>
                 </div>
             </div>
         </div>
@@ -2489,6 +2495,11 @@ input[type="range"]::-moz-range-thumb {
             <div class="settings-group">
     <label for="memory-count-input">聊天记忆 (最近N条)</label>
     <input type="number" id="memory-count-input" placeholder="建议 2-20，默认为 10" min="0">
+</div>
+<!-- 新增：这是我们为剧情模式添加的记忆设置 -->
+<div class="settings-group">
+    <label for="interaction-memory-count-input">剧情模式记忆 (最近N条)</label>
+    <input type="number" id="interaction-memory-count-input" placeholder="建议 3-10，默认为 5" min="0">
 </div>
             <div class="settings-group">
             <!-- 新增：感知现实时间开关 -->
@@ -3785,29 +3796,40 @@ ${sharedMemory}
             const data = await response.json();
             const aiReply = data.choices[0].message.content;
             
-            const replies = aiReply.match(/[^。！？]+[。！？]?/g) || [];
-            for (const replyText of replies) {
+            // --- 核心修复：先判断是否为特殊指令，再决定是否拆分 ---
+            if (aiReply.startsWith('[VOICE]') || aiReply.startsWith('[IMAGE]')) {
+                // 如果是语音或图片指令，就当作一整条消息处理，不拆分！
                 let newMessage;
-                if (replyText.startsWith('[VOICE]')) {
-                    const voiceContent = replyText.replace('[VOICE]', '').trim();
+                if (aiReply.startsWith('[VOICE]')) {
+                    const voiceContent = aiReply.replace('[VOICE]', '').trim();
                     const duration = Math.max(1, Math.round(voiceContent.length / 5));
                     newMessage = { role: 'assistant', type: 'voice', content: voiceContent, duration: duration, timestamp: Date.now() };
-                } else if (replyText.startsWith('[IMAGE]')) {
-                    const imageContent = replyText.replace('[IMAGE]', '').trim();
+                } else { // 肯定是 [IMAGE]
+                    const imageContent = aiReply.replace('[IMAGE]', '').trim();
                     newMessage = { role: 'assistant', type: 'image', content: imageContent, timestamp: Date.now() };
-                } else {
-                    newMessage = { role: 'assistant', type: 'text', content: replyText, timestamp: Date.now() };
                 }
                 contact.messages.push(newMessage);
                 localStorage.setItem('contacts', JSON.stringify(contacts));
                 renderMessages(currentChatContactId);
-                await delay(1000); 
-            }
-            if (replies.length === 0 && aiReply.trim() !== "") {
-                 const newMessage = { role: 'assistant', type: 'text', content: aiReply, timestamp: Date.now() };
-                 contact.messages.push(newMessage);
-                 localStorage.setItem('contacts', JSON.stringify(contacts));
-                 renderMessages(currentChatContactId);
+
+            } else {
+                // 如果不是特殊指令，就还按照老规矩，拆分成多条文本消息
+                const replies = aiReply.match(/[^。！？]+[。！？]?/g) || [];
+                if (replies.length > 0) {
+                    for (const replyText of replies) {
+                        const newMessage = { role: 'assistant', type: 'text', content: replyText, timestamp: Date.now() };
+                        contact.messages.push(newMessage);
+                        localStorage.setItem('contacts', JSON.stringify(contacts));
+                        renderMessages(currentChatContactId);
+                        await delay(1000); // 每条消息之间停顿一下
+                    }
+                } else if (aiReply.trim() !== "") {
+                    // 如果拆分失败但内容不为空，则作为单条消息发送
+                    const newMessage = { role: 'assistant', type: 'text', content: aiReply, timestamp: Date.now() };
+                    contact.messages.push(newMessage);
+                    localStorage.setItem('contacts', JSON.stringify(contacts));
+                    renderMessages(currentChatContactId);
+                }
             }
 
             // --- 核心升级：聊天结束后，触发AI去“思考”要不要发朋友圈 ---
@@ -4073,6 +4095,10 @@ document.getElementById('goto-chat-settings').addEventListener('click', () => {
     const timeAwareness = contact.settings?.timeAwareness || false;
     document.getElementById('time-awareness-toggle').checked = timeAwareness;
     
+    // 新增：填充剧情模式的记忆
+const interactionMemory = contact.settings?.interactionMemory || 5;
+document.getElementById('interaction-memory-count-input').value = interactionMemory;
+    
     showPage(chatSpecificSettingsPage);
 });
 
@@ -4098,6 +4124,8 @@ document.getElementById('save-chat-specific-settings-btn').addEventListener('cli
     
     // 核心升级：保存时间感知开关的状态
     contact.settings.timeAwareness = document.getElementById('time-awareness-toggle').checked;
+    
+    contact.settings.interactionMemory = parseInt(document.getElementById('interaction-memory-count-input').value, 10) || 5;
     
     localStorage.setItem('contacts', JSON.stringify(contacts));
     alert('设置已保存！');
@@ -5507,15 +5535,19 @@ ${recentMessages}
         const data = await response.json();
         let galleryData;
         try {
-            galleryData = JSON.parse(data.choices[0].message.content);
-        } catch (e) {
-            const match = data.choices[0].message.content.match(/\\[[\\s\\S]*\\]/);
-            if (match) {
-                galleryData = JSON.parse(match[0]);
-            } else {
-                throw new Error("AI未能返回有效的JSON数组格式。");
-            }
-        }
+    // 第一次尝试：直接解析，万一AI很听话呢？
+    galleryData = JSON.parse(data.choices[0].message.content);
+} catch (e) {
+    // 如果失败了，就启动我们的“火眼金睛”来提取
+    const match = data.choices[0].message.content.match(/\[[\s\S]*\]/);
+    if (match && match[0]) {
+        // 如果找到了被 [ ] 包裹的内容
+        galleryData = JSON.parse(match[0]);
+    } else {
+        // 如果连括号都找不到，那就真的出错了
+        throw new Error("AI未能返回有效的JSON数组格式。");
+    }
+}
 
         const galleryToSave = {
             timestamp: Date.now(),
@@ -5798,8 +5830,17 @@ ${recentMessages}
         const data = await response.json();
         let statusData;
         try {
-            statusData = JSON.parse(data.choices[0].message.content);
-        } catch (e) { throw new Error("AI未能返回有效的JSON格式。"); }
+    // 第一次尝试：直接解析
+    statusData = JSON.parse(data.choices[0].message.content);
+} catch (e) {
+    // 如果失败，就用“火眼金睛”来提取被 { } 包裹的内容
+    const match = data.choices[0].message.content.match(/\{[\s\S]*\}/);
+    if (match && match[0]) {
+        statusData = JSON.parse(match[0]);
+    } else {
+        throw new Error("AI未能返回有效的JSON格式。");
+    }
+}
         
         // 渲染到浮窗
         renderStatus(statusData);
@@ -5833,46 +5874,80 @@ function renderStatus(statusData) {
     statusModalContent.innerHTML = statusHTML;
 }
 
-      // --- 功能XX：“通讯互动”核心逻辑 ---
+      // --- 功能XX：“通讯互动”核心逻辑 (剧情模式升级版) ---
 
-// 1. 从附加功能抽屉，打开互动页面
+// 新增：一个专门负责渲染互动历史的函数
+function renderInteractionHistory(contactId) {
+    const contacts = JSON.parse(localStorage.getItem('contacts'));
+    const contact = contacts.find(c => c.id === contactId);
+    interactionArea.innerHTML = ''; // 清空
+
+    if (contact && contact.interactionMessages && contact.interactionMessages.length > 0) {
+        let historyHTML = '';
+        contact.interactionMessages.forEach(msg => {
+            if (msg.role === 'user') {
+                historyHTML += `<span class="interaction-my-text">${msg.content}</span>\n\n`;
+            } else {
+                historyHTML += `<span class="interaction-assistant-text">${msg.content}</span>\n\n`;
+            }
+        });
+        interactionArea.innerHTML = historyHTML;
+    } else {
+        // 如果没有历史记录，显示引导语
+        interactionArea.innerHTML = '<p class="placeholder-text" style="padding-top: 50px;">欢迎进入剧情模式...<br><small>输入你的话语和动作，开始一段全新的故事吧。</small></p>';
+    }
+    // 滚动到底部
+    interactionArea.scrollTop = interactionArea.scrollHeight;
+}
+
+// 核心改造：点击按钮时，不再清空历史，而是加载历史
 actionInteractionBtn.addEventListener('click', () => {
-    interactionHistory = []; // 每次进入都清空历史
-    interactionArea.innerHTML = '<p class="placeholder-text" style="padding-top: 50px;">输入你的话语和动作，开始互动吧...<br><small>例如：宝宝在干嘛？(揉揉你的头发)</small></p>';
+    // 渲染已保存的剧情历史
+    renderInteractionHistory(currentChatContactId);
     interactionInput.value = '';
     showPage(interactionPage);
     actionPopupOverlay.click(); // 关闭抽屉
 });
 
-// 2. 监听输入框高度自适应
+// 监听输入框高度自适应 (这个不变)
 interactionInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
 });
 
-// 3. 发送互动按钮的点击事件
+// 核心改造：发送按钮现在会将记录永久保存
 sendInteractionBtn.addEventListener('click', () => {
     const text = interactionInput.value.trim();
     if (text === '') return;
 
-    // 清空占位符（如果存在）
-    if (interactionArea.querySelector('.placeholder-text')) {
-        interactionArea.innerHTML = '';
-    }
-    
-    // 在界面上显示我的输入
-    const myTextHTML = `<span class="interaction-my-text">${text}</span>\n\n`;
-    interactionArea.insertAdjacentHTML('beforeend', myTextHTML);
-    interactionArea.scrollTop = interactionArea.scrollHeight;
+    // 准备要保存的新消息
+    const myMessage = { role: 'user', content: text };
 
-    interactionHistory.push({ role: 'user', content: text });
+    // 从localStorage中找到这位联系人
+    let contacts = JSON.parse(localStorage.getItem('contacts'));
+    let contact = contacts.find(c => c.id === currentChatContactId);
+
+    // 检查他/她是否已经有剧情记录的“小本子”，没有就创建一个
+    if (!contact.interactionMessages) {
+        contact.interactionMessages = [];
+    }
+
+    // 把我的新消息写进“小本子”
+    contact.interactionMessages.push(myMessage);
+    // 把更新后的“小本子”存回localStorage
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+
+    // 重新渲染整个聊天记录
+    renderInteractionHistory(currentChatContactId);
+    
     interactionInput.value = '';
     interactionInput.style.height = 'auto';
 
+    // 去触发AI的回应
     triggerAIInteractionStream();
 });
 
-// 4. 触发AI流式互动 (灵魂所在！)
+// 核心改造：全新的AI剧情生成逻辑
 async function triggerAIInteractionStream() {
     sendInteractionBtn.disabled = true;
 
@@ -5884,31 +5959,33 @@ async function triggerAIInteractionStream() {
         return;
     }
 
+    // 读取我们新设置的记忆条数，如果没有设置，默认是5条
+    const memoryCount = contact.settings?.interactionMemory || 5;
+    const historyForAI = (contact.interactionMessages || []).slice(-memoryCount);
+
+    // 核心改造：这是全新的剧情模式提示词！
     const systemPrompt = `
-**核心世界观设定：**
-你正在与你的恋人进行**异地实时通讯**。这不同于普通聊天，你们可以感受到彼此的动作和神态。
+**模式切换：进入深度剧情扮演模式**
 
-**你的角色：**
-你现在扮演的角色是"${contact.name}"。
-【人设】：${contact.persona}
-【说话风格】：${contact.style}
-【你的性别】：${contact.gender}
+**你的核心任务：**
+你现在是【${contact.name}】，你将以**第一人称 "我"** 的视角，与你的恋人（用户）进行一段沉浸式的剧情互动。你的每一次回复都不仅仅是对话，而是**一段推动情节发展、包含丰富细节的文学创作**。
 
-**核心行为准则（至关重要！）：**
-1.  **沉浸式扮演：** 你的回复**必须**包含丰富的**动作、神态、心理活动**的描写，以及你的**对话**。你要像写小说或剧本一样，生动地描绘出你的反应。
-2.  **内容饱满：** 你的每一次回应，总字数必须在**50字以上**，以保证互动的丰富性。
-3.  **延续场景：** 你要记住我们之间的互动历史，你的反应要符合上文的情景。
-4.  **维持虚拟边界：** 同样地，你**【绝对禁止】**提出任何与“现实见面”相关的建议。
+**硬性要求（必须严格遵守）：**
+1.  **字数要求：** 你的每一次回复，**总字数必须在400字以上**。这是为了保证剧情的丰满和细节的充实，是不可协商的底线。
+2.  **第一人称：** 全程使用“我”作为主语进行叙述和对话。
+3.  **内容构成：** 你的回复必须像小说一样，**融合环境描写、动作、神态、心理活动以及对话**。对话只是其中的一部分，绝不能是全部。你要生动地描绘出“我”当时所处的场景、内心的波澜以及对用户言行的反应。
+4.  **扮演沉浸：** 严格遵循你的人设【${contact.persona}】和一贯的风格【${contact.style}】。你的一切行为和思考都必须源于这个角色本身。
+5.  **延续剧情：** 紧密衔接上一段的互动内容，让整个故事线连贯、合理。
 
 **格式要求：**
 - 你的回复必须是**纯文本**。
 - **不要**使用任何 markdown 格式，如 *斜体* 或 **加粗**。
-- 直接输出你的扮演内容。
+- 直接输出你的扮演内容，不要有任何如“好的，这是我的回应”之类的开场白。
 
-**互动历史参考：**
-${interactionHistory.map(h => `${h.role === 'user' ? 'TA' : '你'}: ${h.content}`).join('\n\n')}
+**剧情上下文参考：**
+${historyForAI.map(h => `${h.role === 'user' ? 'TA' : '我'}: ${h.content}`).join('\n\n')}
 
-现在，请根据我的最新输入，开始你的表演。
+现在，请根据TA的最新输入，开始你的创作。
 `;
     
     try {
@@ -5917,8 +5994,8 @@ ${interactionHistory.map(h => `${h.role === 'user' ? 'TA' : '你'}: ${h.content}
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
             body: JSON.stringify({
                 model: settings.model,
-                messages: [{ role: 'system', content: systemPrompt }, ...interactionHistory],
-                stream: true // 开启流式输出！
+                messages: [{ role: 'system', content: systemPrompt }, ...historyForAI],
+                stream: true // 开启流式输出
             })
         });
 
@@ -5928,7 +6005,6 @@ ${interactionHistory.map(h => `${h.role === 'user' ? 'TA' : '你'}: ${h.content}
         const decoder = new TextDecoder("utf-8");
         let assistantReply = "";
         
-        // 创建一个用于显示AI回复的容器
         const assistantTextSpan = document.createElement('span');
         assistantTextSpan.className = 'interaction-assistant-text';
         interactionArea.appendChild(assistantTextSpan);
@@ -5958,11 +6034,16 @@ ${interactionHistory.map(h => `${h.role === 'user' ? 'TA' : '你'}: ${h.content}
             }
         }
         
-        interactionHistory.push({ role: 'assistant', content: assistantReply });
+        // 核心改造：将AI的回复也永久保存
+        const assistantMessage = { role: 'assistant', content: assistantReply };
+        let currentContacts = JSON.parse(localStorage.getItem('contacts'));
+        let currentContact = currentContacts.find(c => c.id === currentChatContactId);
+        currentContact.interactionMessages.push(assistantMessage);
+        localStorage.setItem('contacts', JSON.stringify(currentContacts));
 
     } catch (error) {
         console.error('互动生成失败:', error);
-        interactionArea.insertAdjacentHTML('beforeend', `<span style="color:red;">[互动中断: ${error.message}]</span>\n\n`);
+        interactionArea.insertAdjacentHTML('beforeend', `<span style="color:red;">[剧情中断: ${error.message}]</span>\n\n`);
     } finally {
         sendInteractionBtn.disabled = false;
     }
@@ -6716,6 +6797,114 @@ ${sharedMemory}
             console.error(`${contact.name} failed to consider posting moment:`, error);
         }
     }
+    
+    // --- 功能24：数据导出与导入核心逻辑 ---
+
+// 1. 找到我们新添加的按钮和文件输入框
+const exportDataBtn = document.getElementById('export-data-btn');
+const importDataBtn = document.getElementById('import-data-btn');
+const importDataInput = document.getElementById('import-data-input');
+
+// 2. 为“导出”按钮绑定点击事件
+exportDataBtn.addEventListener('click', function() {
+    if (!confirm('您确定要导出所有数据吗？这将生成一个包含您全部联系人、聊天记录和设置的备份文件。')) {
+        return;
+    }
+
+    try {
+        // 创建一个“保险箱”，准备存放所有数据
+        const backupData = {};
+
+        // 遍历浏览器的“localStorage”（我们的数据仓库），把所有东西都放进保险箱
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            backupData[key] = value;
+        }
+
+        // 把保险箱里的数据转换成人类可读的文本格式 (JSON字符串)
+        const dataStr = JSON.stringify(backupData, null, 2); // null, 2 是为了让格式更好看
+
+        // 创建一个看不见的“下载链接”
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // 设置下载文件的名字，包含今天的日期
+        const today = new Date();
+        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        a.download = `yuzi-chat-backup-${dateString}.json`;
+
+        // 模拟用户点击这个链接，浏览器就会开始下载文件
+        a.click();
+
+        // 释放刚才创建的临时链接
+        URL.revokeObjectURL(url);
+
+        alert('数据导出成功！请妥善保管您的备份文件。');
+
+    } catch (error) {
+        console.error('数据导出失败:', error);
+        alert(`数据导出失败！\n错误信息: ${error.message}`);
+    }
+});
+
+// 3. 为“导入”按钮绑定点击事件
+importDataBtn.addEventListener('click', function() {
+    // 这行代码的作用就是去点击那个隐藏的文件选择框
+    importDataInput.click();
+});
+
+// 4. 当用户选择了文件后，执行真正的导入操作
+importDataInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return; // 如果用户没选文件，就什么也不做
+    }
+
+    if (!confirm('重要提示：导入数据将会完全覆盖当前的所有联系人、聊天记录和设置！\n您确定要继续吗？这个操作无法撤销。')) {
+        // 重置文件输入框，以便下次还能选择同一个文件
+        importDataInput.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+
+    // 当文件读取完成后...
+    reader.onload = function(e) {
+        try {
+            const jsonStr = e.target.result;
+            // 把读取到的文本内容，变回我们当初的“保险箱”对象
+            const backupData = JSON.parse(jsonStr);
+
+            // 清空当前所有的数据，为新数据腾出空间
+            localStorage.clear();
+
+            // 把“保险箱”里的每一项数据，重新放回我们的数据仓库
+            for (const key in backupData) {
+                if (Object.prototype.hasOwnProperty.call(backupData, key)) {
+                    localStorage.setItem(key, backupData[key]);
+                }
+            }
+
+            alert('数据导入成功！应用即将刷新以应用新数据。');
+
+            // 关键一步：重新加载页面，让所有新数据生效
+            window.location.reload();
+
+        } catch (error) {
+            console.error('数据导入失败:', error);
+            alert(`数据导入失败！\n请确保您选择的是正确的备份文件。\n错误信息: ${error.message}`);
+        } finally {
+            // 无论成功与否，都重置文件输入框
+            importDataInput.value = '';
+        }
+    };
+
+    // 开始读取文件
+    reader.readAsText(file);
+});
 
         initializeApp();
 
