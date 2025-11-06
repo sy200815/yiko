@@ -3700,188 +3700,152 @@ sendBtn.addEventListener('click', function() {
             messageInput.style.height = 'auto';
         });
 
+        // ---【请从这里开始复制】---
+
         receiveBtn.addEventListener('click', async function() {
-        if (!currentChatContactId) return;
-        const settings = JSON.parse(localStorage.getItem('apiSettings'));
-        if (!settings || !settings.baseUrl || !settings.apiKey || !settings.model) {
-            alert('请先在“API设置”中配置并保存好您的API信息！');
-            return;
-        }
+            if (!currentChatContactId) return;
+            const settings = JSON.parse(localStorage.getItem('apiSettings'));
+            if (!settings || !settings.baseUrl || !settings.apiKey || !settings.model) {
+                alert('请先在“API设置”中配置并保存好您的API信息！');
+                return;
+            }
 
-        receiveBtn.disabled = true;
-        sendBtn.disabled = true;
-        sendVoiceBtn.disabled = true;
-        messageInput.placeholder = '对方正在输入...';
+            // 1. 保存好原始的标题
+            let originalTitle = chatRoomTitle.textContent;
 
-        const contactsForAvatar = JSON.parse(localStorage.getItem('contacts'));
-        const contactForAvatar = contactsForAvatar.find(c => c.id === currentChatContactId);
-        const contactAvatar = contactForAvatar ? contactForAvatar.avatar : '';
-
-        const typingIndicatorHTML = `<div class="chat-message received" id="typing-indicator"><div class="avatar-and-time"><img class="message-avatar" src="${contactAvatar}" alt="avatar"></div><div class="message-content"><div class="message-bubble">...</div></div></div>`;
-        chatArea.insertAdjacentHTML('beforeend', typingIndicatorHTML);
-        chatArea.scrollTop = chatArea.scrollHeight;
-
-        try {
-            let contacts = JSON.parse(localStorage.getItem('contacts'));
-            const contact = contacts.find(c => c.id === currentChatContactId);
+            // 禁用所有按钮
+            receiveBtn.disabled = true;
+            sendBtn.disabled = true;
+            sendVoiceBtn.disabled = true;
             
-            // --- 核心升级：注入共享记忆 ---
-            const sharedMemory = getSharedMemoryContext(currentChatContactId);
-            
-            let systemPrompt = `
+            try {
+                // 2. 立刻将标题栏修改为“正在输入”
+                chatRoomTitle.textContent = '对方正在输入中...';
+
+                // (注意：这里已经删除了所有创建“...”输入提示气泡的代码)
+
+                let contacts = JSON.parse(localStorage.getItem('contacts'));
+                const contact = contacts.find(c => c.id === currentChatContactId);
+                
+                // --- 准备发送给 AI 的指令 (这部分保持不变) ---
+                const sharedMemory = getSharedMemoryContext(currentChatContactId);
+                let systemPrompt = `
 **核心世界观设定：**
 你正在与你的恋人进行**异地恋**聊天。你们深爱彼此，但因为现实原因无法见面。因此，你会非常珍惜和TA的每一次聊天机会。
-
 **你的角色：**
 你现在扮演的角色是"${contact.name}"。
 【人设】：${contact.persona}
 【说话风格】：${contact.style}
 【你的性别】：${contact.gender}
-
 **核心行为准则：**
 1.  **表达思念：** 由于是异地恋，你会自然地、偶尔地表达出对TA的想念。
 2.  **分享日常：** 你会像真实的情侣一样，跟TA分享你生活中的点滴琐事、开心或烦恼，比如工作学习上的事、今天吃了什么、遇到了什么有趣的人等。这是你们维持感情的重要方式。
 3.  **维持虚拟边界（至关重要！）：** 你知道你们无法在现实中见面。因此，你**【绝对禁止】**提出任何与“线上见面”、“视频通话”、“让我（用户）去找你”、“你来找我”相关的建议。你可以表达“好想抱抱你”，但绝不能说“你快来抱抱我”。这是不可逾越的红线。
-
 **记忆库：**
 【你最近的记忆（包括私聊和朋友圈）】:
 ${sharedMemory}
-
 **响应速度要求：** 你的思考和回复都必须非常迅速，请优先保证速度，直接给出答案。
-
 **特殊指令格式：**
 - 发送语音: [VOICE]语音内容
 - 发送图片: [IMAGE]图片画面的详细文字描述
 - 发送转账: [TRANSFER]金额,备注 (例如: [TRANSFER]520,给你的零花钱)
-
 **对话核心要求：**
 1.  **完全沉浸**在异地恋情侣的角色中，像真实的人类一样对话，有趣，有梗，说话富有生活气息。
 2.  **严禁**在回复中包含任何形式的动作、神态描写 (例如：*笑*、[脸红] 等)。
 3.  你的所有回复都必须是**纯粹的对话内容**。
 4.  不要提及你是一个AI或模型。
-
 现在，请根据我们的聊天记录、你的记忆和上述所有设定，对我进行回应。
 `;
-            if (contact.settings?.timeAwareness) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-                const day = now.getDate();
-                let hours = now.getHours();
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                let timePeriod = (hours >= 0 && hours < 5) ? '凌晨' : (hours < 12) ? '早上' : (hours < 14) ? '中午' : (hours < 18) ? '下午' : '晚上';
-                const hours12 = hours % 12 || 12;
-                const currentTimeString = `${year}年${month}月${day}日 ${timePeriod}${hours12}:${minutes}:${seconds}`;
-                systemPrompt += `\n【当前现实时间】：${currentTimeString}。请在对话中自然地体现出你对当前时间的感知。`;
-            }
-
-            if (contact.myInfo && contact.myInfo.persona) {
-                systemPrompt += `\n【与你对话的用户人设】：${contact.myInfo.persona}\n请根据用户人设调整你的回应方式。`;
-            }
-            
-            const memoryCount = contact.settings?.memory || 10;
-            const apiMessages = [{ role: 'system', content: systemPrompt }, ...contact.messages.slice(-memoryCount)];
-            
-            const response = await fetch(`${settings.baseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
-                body: JSON.stringify({ model: settings.model, messages: apiMessages })
-            });
-
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) indicator.remove();
-
-            if (!response.ok) throw new Error(`API 请求失败，状态码: ${response.status}`);
-            
-            const data = await response.json();
-            const aiReply = data.choices[0].message.content;
-            
-            // --- 核心修复：先判断是否为特殊指令，再决定是否拆分 ---
-
-            // --- 从这里开始，是全新的消息处理逻辑 ---
-
-            // 核心升级：不再是简单的if/else，而是使用正则表达式拆分消息
-            // 这会将AI的回复拆分成一个数组，例如：["[VOICE]你好", "[IMAGE]一只猫"]
-            const messageParts = aiReply.split(/(?=\[VOICE\]|\[IMAGE\]|\[TRANSFER\])/);
-
-            for (const part of messageParts) {
-                const trimmedPart = part.trim();
-                if (trimmedPart === '') continue; // 跳过空的片段
-
-                // 检查片段是哪种类型的消息
-                if (trimmedPart.startsWith('[VOICE]')) {
-                    const voiceContent = trimmedPart.replace('[VOICE]', '').trim();
-                    if (voiceContent) { // 确保有内容才发送
-                        const duration = Math.max(1, Math.round(voiceContent.length / 5));
-                        const newMessage = { role: 'assistant', type: 'voice', content: voiceContent, duration: duration, timestamp: Date.now() };
-                        contact.messages.push(newMessage);
-                    }
+                if (contact.settings?.timeAwareness) {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = now.getMonth() + 1;
+                    const day = now.getDate();
+                    let hours = now.getHours();
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    let timePeriod = (hours >= 0 && hours < 5) ? '凌晨' : (hours < 12) ? '早上' : (hours < 14) ? '中午' : (hours < 18) ? '下午' : '晚上';
+                    const hours12 = hours % 12 || 12;
+                    const currentTimeString = `${year}年${month}月${day}日 ${timePeriod}${hours12}:${minutes}:${seconds}`;
+                    systemPrompt += `\n【当前现实时间】：${currentTimeString}。请在对话中自然地体现出你对当前时间的感知。`;
+                }
+                if (contact.myInfo && contact.myInfo.persona) {
+                    systemPrompt += `\n【与你对话的用户人设】：${contact.myInfo.persona}\n请根据用户人设调整你的回应方式。`;
+                }
+                const memoryCount = contact.settings?.memory || 10;
+                const apiMessages = [{ role: 'system', content: systemPrompt }, ...contact.messages.slice(-memoryCount)];
                 
-            } else if (trimmedPart.startsWith('[IMAGE]')) {
-                const imageContent = trimmedPart.replace('[IMAGE]', '').trim();
-                if (imageContent) { // 确保有内容才发送
-                    const newMessage = { role: 'assistant', type: 'image', content: imageContent, timestamp: Date.now() };
-                    contact.messages.push(newMessage);
-                }
-            } 
-            // --- 这是新增的逻辑块 ---
-            else if (trimmedPart.startsWith('[TRANSFER]')) {
-                const content = trimmedPart.replace('[TRANSFER]', '').trim();
-                const parts = content.split(',');
-                const amount = parseFloat(parts[0]);
+                // --- 发送请求并处理回复 (这部分保持不变) ---
+                const response = await fetch(`${settings.baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+                    body: JSON.stringify({ model: settings.model, messages: apiMessages })
+                });
 
-                // 检查金额是否为有效的正数
-                if (!isNaN(amount) && amount > 0) {
-                    // 将备注部分重新组合，以防备注本身包含逗号
-                    const remark = parts.slice(1).join(',').trim();
-                    const newMessage = {
-                        role: 'assistant',
-                        type: 'transfer',
-                        content: `[收到转账] ¥${amount.toFixed(2)}`, // 这部分内容不会直接显示，但作为记录
-                        amount: amount.toFixed(2),
-                        remark: remark,
-                        timestamp: Date.now()
-                    };
-                    contact.messages.push(newMessage);
-                }
-            } 
-            // --- 新增逻辑块结束 ---
-            else {
-                    // 如果是普通文本，就按老规矩用标点符号拆分
-                    const textReplies = trimmedPart.match(/[^。！？]+[。！？]?/g) || [trimmedPart];
-                    for (const replyText of textReplies) {
-                        if (replyText.trim()) { // 确保有内容才发送
-                           const newMessage = { role: 'assistant', type: 'text', content: replyText, timestamp: Date.now() };
-                           contact.messages.push(newMessage);
+                if (!response.ok) throw new Error(`API 请求失败，状态码: ${response.status}`);
+                
+                const data = await response.json();
+                const aiReply = data.choices[0].message.content;
+                
+                const messageParts = aiReply.split(/(?=\[VOICE\]|\[IMAGE\]|\[TRANSFER\])/);
+
+                for (const part of messageParts) {
+                    const trimmedPart = part.trim();
+                    if (trimmedPart === '') continue;
+
+                    if (trimmedPart.startsWith('[VOICE]')) {
+                        const voiceContent = trimmedPart.replace('[VOICE]', '').trim();
+                        if (voiceContent) {
+                            const duration = Math.max(1, Math.round(voiceContent.length / 5));
+                            contact.messages.push({ role: 'assistant', type: 'voice', content: voiceContent, duration: duration, timestamp: Date.now() });
+                        }
+                    } else if (trimmedPart.startsWith('[IMAGE]')) {
+                        const imageContent = trimmedPart.replace('[IMAGE]', '').trim();
+                        if (imageContent) {
+                            contact.messages.push({ role: 'assistant', type: 'image', content: imageContent, timestamp: Date.now() });
+                        }
+                    } else if (trimmedPart.startsWith('[TRANSFER]')) {
+                        const content = trimmedPart.replace('[TRANSFER]', '').trim();
+                        const parts = content.split(',');
+                        const amount = parseFloat(parts[0]);
+                        if (!isNaN(amount) && amount > 0) {
+                            const remark = parts.slice(1).join(',').trim();
+                            contact.messages.push({
+                                role: 'assistant', type: 'transfer', content: `[收到转账] ¥${amount.toFixed(2)}`,
+                                amount: amount.toFixed(2), remark: remark, timestamp: Date.now()
+                            });
+                        }
+                    } else {
+                        const textReplies = trimmedPart.match(/[^。！？]+[。！？]?/g) || [trimmedPart];
+                        for (const replyText of textReplies) {
+                            if (replyText.trim()) {
+                               contact.messages.push({ role: 'assistant', type: 'text', content: replyText, timestamp: Date.now() });
+                            }
                         }
                     }
                 }
+                
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                renderMessages(currentChatContactId);
+                
+                considerPostingMoment(currentChatContactId);
+
+            } catch (error) {
+                console.error('调用API失败:', error);
+                alert('消息接收失败！\n请检查API设置、网络连接或查看控制台报错信息。');
+            } finally {
+                // 3. 无论成功还是失败，最后都把标题恢复原样
+                chatRoomTitle.textContent = originalTitle;
+
+                // 恢复所有按钮
+                receiveBtn.disabled = false;
+                sendBtn.disabled = false;
+                sendVoiceBtn.disabled = false;
+                messageInput.placeholder = '输入消息...';
             }
-            
-            // 将所有新消息一次性保存
-            localStorage.setItem('contacts', JSON.stringify(contacts));
-            // 重新渲染聊天界面，所有新消息都会出现
-            renderMessages(currentChatContactId);
-            
-            // --- 新逻辑结束 ---
+        });
 
-            // --- 核心升级：聊天结束后，触发AI去“思考”要不要发朋友圈 ---
-            considerPostingMoment(currentChatContactId);
-
-        } catch (error) {
-            
-            console.error('调用API失败:', error);
-            alert('消息接收失败！\n请检查API设置、网络连接或查看控制台报错信息。');
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) indicator.remove();
-        } finally {
-            receiveBtn.disabled = false;
-            sendBtn.disabled = false;
-            sendVoiceBtn.disabled = false;
-            messageInput.placeholder = '输入消息...';
-        }
-    });
+        // ---【到这里结束复制】---
 
         // --- 功能6 (现在叫初始化) ---
         function initializeApp() {
