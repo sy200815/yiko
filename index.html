@@ -3752,6 +3752,7 @@ ${sharedMemory}
 **特殊指令格式：**
 - 发送语音: [VOICE]语音内容
 - 发送图片: [IMAGE]图片画面的详细文字描述
+- 发送转账: [TRANSFER]金额,备注 (例如: [TRANSFER]520,给你的零花钱)
 
 **对话核心要求：**
 1.  **完全沉浸**在异地恋情侣的角色中，像真实的人类一样对话，有趣，有梗，说话富有生活气息。
@@ -3802,7 +3803,7 @@ ${sharedMemory}
 
             // 核心升级：不再是简单的if/else，而是使用正则表达式拆分消息
             // 这会将AI的回复拆分成一个数组，例如：["[VOICE]你好", "[IMAGE]一只猫"]
-            const messageParts = aiReply.split(/(?=\[VOICE\]|\[IMAGE\])/);
+            const messageParts = aiReply.split(/(?=\[VOICE\]|\[IMAGE\]|\[TRANSFER\])/);
 
             for (const part of messageParts) {
                 const trimmedPart = part.trim();
@@ -3816,13 +3817,37 @@ ${sharedMemory}
                         const newMessage = { role: 'assistant', type: 'voice', content: voiceContent, duration: duration, timestamp: Date.now() };
                         contact.messages.push(newMessage);
                     }
-                } else if (trimmedPart.startsWith('[IMAGE]')) {
-                    const imageContent = trimmedPart.replace('[IMAGE]', '').trim();
-                    if (imageContent) { // 确保有内容才发送
-                        const newMessage = { role: 'assistant', type: 'image', content: imageContent, timestamp: Date.now() };
-                        contact.messages.push(newMessage);
-                    }
-                } else {
+                
+            } else if (trimmedPart.startsWith('[IMAGE]')) {
+                const imageContent = trimmedPart.replace('[IMAGE]', '').trim();
+                if (imageContent) { // 确保有内容才发送
+                    const newMessage = { role: 'assistant', type: 'image', content: imageContent, timestamp: Date.now() };
+                    contact.messages.push(newMessage);
+                }
+            } 
+            // --- 这是新增的逻辑块 ---
+            else if (trimmedPart.startsWith('[TRANSFER]')) {
+                const content = trimmedPart.replace('[TRANSFER]', '').trim();
+                const parts = content.split(',');
+                const amount = parseFloat(parts[0]);
+
+                // 检查金额是否为有效的正数
+                if (!isNaN(amount) && amount > 0) {
+                    // 将备注部分重新组合，以防备注本身包含逗号
+                    const remark = parts.slice(1).join(',').trim();
+                    const newMessage = {
+                        role: 'assistant',
+                        type: 'transfer',
+                        content: `[收到转账] ¥${amount.toFixed(2)}`, // 这部分内容不会直接显示，但作为记录
+                        amount: amount.toFixed(2),
+                        remark: remark,
+                        timestamp: Date.now()
+                    };
+                    contact.messages.push(newMessage);
+                }
+            } 
+            // --- 新增逻辑块结束 ---
+            else {
                     // 如果是普通文本，就按老规矩用标点符号拆分
                     const textReplies = trimmedPart.match(/[^。！？]+[。！？]?/g) || [trimmedPart];
                     for (const replyText of textReplies) {
@@ -5954,96 +5979,71 @@ sendInteractionBtn.addEventListener('click', () => {
     interactionInput.style.height = 'auto';
 
     // 去触发AI的回应
-    triggerAIInteractionStream();
+    triggerAIInteraction();
 });
 
-// 核心改造：全新的AI剧情生成逻辑
-async function triggerAIInteractionStream() {
+// 我们将函数名中的 "Stream" 去掉，因为它不再是流式了
+async function triggerAIInteraction() {
     sendInteractionBtn.disabled = true;
+    interactionInput.placeholder = '对方正在输入...'; // 增加输入提示
 
     let contacts = JSON.parse(localStorage.getItem('contacts'));
     let contact = contacts.find(c => c.id === currentChatContactId);
     const settings = JSON.parse(localStorage.getItem('apiSettings'));
     if (!contact || !settings) {
         sendInteractionBtn.disabled = false;
+        interactionInput.placeholder = '输入你的话语和动作...';
         return;
     }
 
-    // 读取我们新设置的记忆条数，如果没有设置，默认是5条
+    // 这部分和原来一样，准备发送给AI的数据
     const memoryCount = contact.settings?.interactionMemory || 5;
     const historyForAI = (contact.interactionMessages || []).slice(-memoryCount);
-
-    // 核心改造：这是全新的剧情模式提示词！
     const systemPrompt = `
 **模式切换：进入深度剧情扮演模式**
-
 **你的核心任务：**
 你现在是【${contact.name}】，你将以**第一人称 "我"** 的视角，与你的恋人（用户）进行一段沉浸式的剧情互动。你的每一次回复都不仅仅是对话，而是**一段推动情节发展、包含丰富细节的文学创作**。
-
 **硬性要求（必须严格遵守）：**
 1.  **字数要求：** 你的每一次回复，**总字数必须在400字以上**。这是为了保证剧情的丰满和细节的充实，是不可协商的底线。
 2.  **第一人称：** 全程使用“我”作为主语进行叙述和对话。
 3.  **内容构成：** 你的回复必须像小说一样，**融合环境描写、动作、神态、心理活动以及对话**。对话只是其中的一部分，绝不能是全部。你要生动地描绘出“我”当时所处的场景、内心的波澜以及对用户言行的反应。
 4.  **扮演沉浸：** 严格遵循你的人设【${contact.persona}】和一贯的风格【${contact.style}】。你的一切行为和思考都必须源于这个角色本身。
 5.  **延续剧情：** 紧密衔接上一段的互动内容，让整个故事线连贯、合理。
-
 **格式要求：**
 - 你的回复必须是**纯文本**。
 - **不要**使用任何 markdown 格式，如 *斜体* 或 **加粗**。
 - 直接输出你的扮演内容，不要有任何如“好的，这是我的回应”之类的开场白。
-
 **剧情上下文参考：**
 ${historyForAI.map(h => `${h.role === 'user' ? 'TA' : '我'}: ${h.content}`).join('\n\n')}
-
 现在，请根据TA的最新输入，开始你的创作。
 `;
     
     try {
+        // --- 核心修改在这里 ---
         const response = await fetch(`${settings.baseUrl}/chat/completions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
             body: JSON.stringify({
                 model: settings.model,
                 messages: [{ role: 'system', content: systemPrompt }, ...historyForAI],
-                stream: true // 开启流式输出
+                // stream: true, // <-- 关键：删除了这一行！
             })
         });
 
         if (!response.ok) throw new Error(`API请求失败: ${response.status}`);
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let assistantReply = "";
-        
+        // --- 全新的响应处理方式 ---
+        const data = await response.json();
+        const assistantReply = data.choices[0].message.content;
+
+        // 一次性将完整回复渲染到页面
         const assistantTextSpan = document.createElement('span');
         assistantTextSpan.className = 'interaction-assistant-text';
+        assistantTextSpan.textContent = assistantReply;
         interactionArea.appendChild(assistantTextSpan);
+        interactionArea.insertAdjacentHTML('beforeend', '\n\n');
+        interactionArea.scrollTop = interactionArea.scrollHeight;
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-                interactionArea.insertAdjacentHTML('beforeend', '\n\n');
-                break;
-            }
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n");
-            const parsedLines = lines
-                .map((line) => line.replace(/^data: /, "").trim())
-                .filter((line) => line !== "" && line !== "[DONE]")
-                .map((line) => JSON.parse(line));
-
-            for (const parsedLine of parsedLines) {
-                const { choices } = parsedLine;
-                const { delta } = choices[0];
-                const { content } = delta;
-                if (content) {
-                    assistantReply += content;
-                    assistantTextSpan.textContent += content;
-                    interactionArea.scrollTop = interactionArea.scrollHeight;
-                }
-            }
-        }
-        
         // 核心改造：将AI的回复也永久保存
         const assistantMessage = { role: 'assistant', content: assistantReply };
         let currentContacts = JSON.parse(localStorage.getItem('contacts'));
@@ -6056,6 +6056,7 @@ ${historyForAI.map(h => `${h.role === 'user' ? 'TA' : '我'}: ${h.content}`).joi
         interactionArea.insertAdjacentHTML('beforeend', `<span style="color:red;">[剧情中断: ${error.message}]</span>\n\n`);
     } finally {
         sendInteractionBtn.disabled = false;
+        interactionInput.placeholder = '输入你的话语和动作...'; // 恢复输入提示
     }
 }
 
